@@ -17,10 +17,10 @@ export default function Sidebar({ collapsed }) {
   const items = [
     { id: "dashboard", label: "Dashboard", icon: <Home size={18} /> },
     { id: "profile", label: "Profile", icon: <User size={18} /> },
-    { id: "reports", label: "Pricing", icon: <UilUsdCircle size={18} /> },
+    { id: "pricing", label: "Pricing", icon: <UilUsdCircle size={18} /> },
     { id: "reports", label: "Interview", icon: <UilUsersAlt size={18} /> },
-    { id: "reports", label: "Results", icon: < BarChart3 size={18} /> },
-    { id: "reports", label: "Note", icon: <UilWindowSection size={18} /> },
+    { id: "reports", label: "Results", icon: <BarChart3 size={18} /> },
+    { id: "notes", label: "Notes", icon: <UilWindowSection size={18} /> },
   ];
 
 const handleLogout = async () => {

@@ -11,7 +11,6 @@ import AppRoutes from "./routes/AppRoutes.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ErrorBoundary>
       <Provider store={store}>
         <ThemeProvider>
           <BrowserRouter>
@@ -19,6 +18,5 @@ createRoot(document.getElementById("root")).render(
           </BrowserRouter>
         </ThemeProvider>
       </Provider>
-    </ErrorBoundary>
   </StrictMode>
 );

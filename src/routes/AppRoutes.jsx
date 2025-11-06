@@ -10,6 +10,10 @@ const Login = lazy(() => import("../pages/Login"));
 const Register = lazy(() => import("../pages/Register"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Profile = lazy(() => import("../pages/Profile"));
+const Notes = lazy(() => import("../pages/Notes"));
+import ErrorBoundary from "../components/ErrorBoundary";
+import Pricing from "../pages/Pricing";
+
 // const Interviews = lazy(() => import("../pages/Interviews"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
@@ -49,6 +53,28 @@ export default function AppRoutes() {
             <PrivateRoute>
               <DashboardLayout>
                 <Profile />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <Pricing />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/notes"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <ErrorBoundary>
+                  <Notes />
+                </ErrorBoundary>
               </DashboardLayout>
             </PrivateRoute>
           }

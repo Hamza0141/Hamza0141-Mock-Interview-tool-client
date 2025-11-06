@@ -100,7 +100,7 @@ const authSlice = createSlice({
       state.status = "idle";
       state.error = null;
       state.message = null;
-      localStorage.removeItem("user_data"); // ✅ always clear
+      localStorage.removeItem("user_data"); // always clear
     },
   },
   extraReducers: (builder) => {
