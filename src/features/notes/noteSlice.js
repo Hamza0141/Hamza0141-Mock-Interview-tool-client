@@ -65,21 +65,25 @@ const noteSlice = createSlice({
       })
       .addCase(fetchNotes.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.list = action.payload;
+        state.list = action.payload || [];
       })
       .addCase(fetchNotes.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
       .addCase(addNote.fulfilled, (state, action) => {
-        state.list.unshift(action.payload);
+        state.status = "succeeded";
+        // ✅ instantly add the new note to the list
+        if (action.payload) state.list.unshift(action.payload);
       })
       .addCase(addNote.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || "Unable to add note";
       })
       .addCase(deleteNote.fulfilled, (state, action) => {
-        state.list = state.list.filter((n) => n.note_id !== action.payload);
+        state.list = state.list.filter(
+          (note) => note.note_id !== action.meta.arg
+        );
       });
   },
 });

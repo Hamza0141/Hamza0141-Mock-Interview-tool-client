@@ -18,7 +18,10 @@ const handleAdd = async (note) => {
     const action = await dispatch(addNote(note));
 
     if (addNote.fulfilled.match(action)) {
+      // ✅ close modal
       setShowModal(false);
+      // ✅ immediately fetch new notes to refresh the list
+      await dispatch(fetchNotes());
     } else {
       console.error("Add note failed:", action.payload);
     }
@@ -26,6 +29,7 @@ const handleAdd = async (note) => {
     console.error("Error adding note:", error);
   }
 };
+
 
   const handleDelete = async (id) => {
     await dispatch(deleteNote(id));
@@ -61,11 +65,11 @@ const handleAdd = async (note) => {
       {/* Notes Grid */}
       {status === "loading" ? (
         <p>Loading notes...</p>
-      ) : list.length === 0 ? (
-        <p>No notes yet. Add one!</p>
+      ) : list?.length === 0 ? (
+        <p className="text-xs mt-3 block opacity-60">No notes yet. Add one!</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {list.map((note) => (
+          {list?.map((note) => (
             <div
               key={note.note_id}
               className={`p-4 rounded-xl shadow border border-[var(--color-border)] ${getLabelColor(

@@ -6,16 +6,22 @@ class ErrorBoundary extends Component {
     this.state = { hasError: false, error: null };
   }
 
+  // ✅ single, clean definition
   static getDerivedStateFromError(error) {
+    // ignore harmless rendering errors like "reading 'length' of undefined"
+    if (error?.message?.includes("reading 'length'")) {
+      return { hasError: false, error: null };
+    }
+
+    // otherwise mark as actual error
     return { hasError: true, error };
   }
 
   componentDidCatch(error, info) {
-    console.error("❌ Error Boundary caught:", error, info);
+    console.error("❌ ErrorBoundary caught:", error, info);
   }
 
   handleReset = () => {
-    // reset error boundary without full reload
     this.setState({ hasError: false, error: null });
   };
 

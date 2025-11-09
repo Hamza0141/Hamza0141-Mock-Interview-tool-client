@@ -3,8 +3,15 @@ import { Suspense, lazy } from "react";
 import PrivateRoute from "./PrivateRoute";
 import Loader from "../components/Loader";
 import DashboardLayout from "../layouts/DashboardLayout";
-import MainLayout from "../layouts/MainLayout";
 
+import MainLayout from "../layouts/MainLayout";
+const InterviewPage = lazy(() => import("../pages/Interview"));
+const InterviewSetup = lazy(() =>
+  import("../pages/InterviewSessionSetup")
+);
+
+const InterviewSession = lazy(() => import("../pages/InterviewSession"));
+const EvaluationPage = lazy(() => import("../pages/EvaluationPage"));
 const Home = lazy(() => import("../pages/Home"));
 const Login = lazy(() => import("../pages/Login"));
 const Register = lazy(() => import("../pages/Register"));
@@ -53,6 +60,46 @@ export default function AppRoutes() {
             <PrivateRoute>
               <DashboardLayout>
                 <Profile />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/interview"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <InterviewPage />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/interview/session"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <InterviewSetup />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/interview/:id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <InterviewSession />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/evaluation/:session_id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <EvaluationPage />
               </DashboardLayout>
             </PrivateRoute>
           }
