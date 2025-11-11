@@ -82,7 +82,7 @@ export default function InterviewPage() {
     if (credits <= 0 && trial <= 0) {
       navigate("/pricing"); // redirect if no balance/trial
     } else {
-      navigate("/interview/session");
+      navigate("/interview/setup");
     }
   };
 

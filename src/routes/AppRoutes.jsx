@@ -75,7 +75,7 @@ export default function AppRoutes() {
           }
         />
         <Route
-          path="/interview/session"
+          path="/interview/setup"
           element={
             <PrivateRoute>
               <DashboardLayout>
@@ -85,7 +85,7 @@ export default function AppRoutes() {
           }
         />
         <Route
-          path="/interview/:id"
+          path="/interview/session"
           element={
             <PrivateRoute>
               <DashboardLayout>

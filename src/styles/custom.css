@@ -1,0 +1,15 @@
+select {
+  background-color: var(--color-bg-panel);
+  color: var(--color-text-main);
+}
+
+select option {
+  background-color: var(--color-bg-panel);
+  color: var(--color-text-main);
+}
+
+/* Optional: nice hover */
+select option:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
