@@ -18,7 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import useVoiceRecorder from "../app/useVoiceRecorder";
 
-// 🔊 Animated bars during recording
+// 🎵 Animated wave signal for recording
 function WaveBars() {
   return (
     <div className="flex items-end gap-1 h-5">
@@ -78,12 +78,12 @@ export default function InterviewSession() {
     stopRecording,
   } = useVoiceRecorder();
 
-  // 🧭 Redirect if user opens directly
+  // 🚫 Redirect if opened directly
   useEffect(() => {
     if (!interviewId) navigate("/interview/setup", { replace: true });
   }, [interviewId, navigate]);
 
-  // 📋 Fetch questions
+  // 🧩 Fetch questions
   useEffect(() => {
     if (!interviewId) return;
     (async () => {
@@ -100,7 +100,7 @@ export default function InterviewSession() {
     })();
   }, [interviewId]);
 
-  // 🔊 Voice synthesis
+  // 🔊 Load speech synthesis voices
   useEffect(() => {
     const loadVoices = () =>
       (voicesRef.current = window.speechSynthesis.getVoices());
@@ -120,26 +120,22 @@ export default function InterviewSession() {
     window.speechSynthesis.speak(u);
   };
 
-  // 🎥 Camera handling
+  // 🎥 Camera controls
   const startCamera = async (facing = "user") => {
     try {
       const constraints = { video: { facingMode: facing } };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      applyStream(stream);
+      streamRef.current?.getTracks()?.forEach((t) => t.stop());
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () =>
+          videoRef.current.play().catch(() => {});
+      }
+      setPermissions((p) => ({ ...p, camera: true }));
     } catch {
       alert("⚠️ Camera permission denied or not available.");
     }
-  };
-
-  const applyStream = (stream) => {
-    streamRef.current?.getTracks()?.forEach((t) => t.stop());
-    streamRef.current = stream;
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.onloadedmetadata = () =>
-        videoRef.current.play().catch(() => {});
-    }
-    setPermissions((p) => ({ ...p, camera: true }));
   };
 
   const toggleCamera = async () => {
@@ -165,7 +161,7 @@ export default function InterviewSession() {
     setPermissions((p) => ({ ...p, speaker: !p.speaker }));
   };
 
-  // ⏱ Timer
+  // ⏱ Timer per question
   useEffect(() => {
     if (!started) return;
     setTimeLeft(120);
@@ -186,21 +182,19 @@ export default function InterviewSession() {
   const startInterview = () => {
     setStarted(true);
     speakQuestion(questions[0]?.question_text);
-    if (presetMode === "speech") setInputMode("record");
-    if (presetMode === "text") setInputMode("type");
   };
 
-  // 🎙️ Recording with cap
+  // 🎙️ Recording flow with cap
   const startRecordingWithCap = async () => {
     if (recordBlocked) return;
-    setIsTranscribing(false);
     setInputMode("record");
+    setIsTranscribing(false);
     await startRecording();
     clearTimeout(recordTimeoutRef.current);
     recordTimeoutRef.current = setTimeout(async () => {
       await stopRecordingSafe();
       setRecordBlocked(true);
-    }, 120000);
+    }, 120000); // 2 minutes cap
   };
 
   const stopRecordingSafe = async () => {
@@ -224,6 +218,7 @@ export default function InterviewSession() {
       },
     ]);
 
+    // reset input states for next question
     setTypedText("");
     setTranscript("");
     setInputMode("none");
@@ -235,7 +230,7 @@ export default function InterviewSession() {
     }
   };
 
-  // 📨 Submit
+  //  Submit
   const submitInterview = async () => {
     try {
       if (recording) await stopRecordingSafe();
@@ -285,7 +280,7 @@ export default function InterviewSession() {
             Evaluating your responses...
           </p>
           <p className="text-sm text-[var(--color-text-muted)] mt-2">
-            This may take a few seconds, pleas don't refresh the page
+            This may take a few seconds.Pleas don't refresh the browser
           </p>
         </div>
       </div>
@@ -300,7 +295,7 @@ export default function InterviewSession() {
       </div>
     );
 
-  // ⚙️ Permissions screen
+  // ⚙️ Permission setup
   if (!started)
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
@@ -359,35 +354,31 @@ export default function InterviewSession() {
         <span className="text-sm text-gray-500">⏱️ {formatTime(timeLeft)}</span>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={current}
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -15 }}
-          transition={{ duration: 0.4 }}
-          className="p-4 rounded-lg border shadow-sm relative"
+      {/* Question */}
+      <motion.div
+        key={current}
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -15 }}
+        transition={{ duration: 0.4 }}
+        className="p-4 rounded-lg border shadow-sm relative"
+      >
+        <p>{questions[current]?.question_text}</p>
+        <button
+          onClick={toggleSpeaker}
+          className={`absolute right-2 bottom-2 p-2 rounded-full ${
+            permissions.speaker
+              ? "text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.6)] animate-pulse"
+              : "text-gray-500 hover:text-[var(--color-primary)]"
+          }`}
         >
-          <p>{questions[current]?.question_text}</p>
-          <button
-            onClick={toggleSpeaker}
-            className={`absolute right-2 bottom-2 p-2 rounded-full ${
-              permissions.speaker
-                ? "text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.6)] animate-pulse"
-                : "text-gray-500 hover:text-[var(--color-primary)]"
-            }`}
-          >
-            {permissions.speaker ? (
-              <Volume2 size={22} />
-            ) : (
-              <VolumeX size={22} />
-            )}
-          </button>
-        </motion.div>
-      </AnimatePresence>
+          {permissions.speaker ? <Volume2 size={22} /> : <VolumeX size={22} />}
+        </button>
+      </motion.div>
 
+      {/* Camera + Input */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* 🎥 Camera */}
+        {/* Camera */}
         <div className="relative flex flex-col items-center">
           {permissions.camera ? (
             <video
@@ -405,7 +396,6 @@ export default function InterviewSession() {
               Camera Disabled
             </div>
           )}
-
           <div className="flex gap-2 mt-2">
             <button
               onClick={toggleCamera}
@@ -430,21 +420,18 @@ export default function InterviewSession() {
           </div>
         </div>
 
-        {/* 🎤 Voice or ✍️ Type */}
+        {/* Input Controls */}
         <div className="flex flex-col">
           <div className="flex gap-3 mb-3">
-            {/* Record button */}
             <button
               onClick={async () => {
                 if (recording) await stopRecordingSafe();
                 else await startRecordingWithCap();
               }}
-              disabled={inputMode === "type" || recordBlocked}
+              disabled={inputMode === "type"}
               className={`flex-1 px-4 py-2 rounded-md border font-medium flex items-center justify-center gap-2 ${
                 recording
                   ? "text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)] animate-pulse"
-                  : recordBlocked
-                  ? "cursor-not-allowed opacity-60"
                   : "text-gray-500 hover:text-[var(--color-primary)]"
               }`}
             >
@@ -452,10 +439,9 @@ export default function InterviewSession() {
               {recording ? "Stop Recording" : "Start Recording"}
             </button>
 
-            {/* Typing button */}
             <button
               onClick={() => setInputMode("type")}
-              disabled={recording}
+              disabled={inputMode === "record"}
               className={`flex-1 px-4 py-2 rounded-md border font-medium flex items-center justify-center gap-2 ${
                 inputMode === "type"
                   ? "text-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.6)] animate-pulse"
@@ -467,7 +453,7 @@ export default function InterviewSession() {
             </button>
           </div>
 
-          {/* Recording visual */}
+          {/* Recording Signal */}
           {recording && (
             <div className="flex items-center gap-3 mb-2">
               <WaveBars />
@@ -477,32 +463,35 @@ export default function InterviewSession() {
             </div>
           )}
 
-          {/* Transcribing spinner */}
+          {/* Transcribing Spinner */}
           {isTranscribing && (
             <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)] mb-2">
               <Loader2 size={16} className="animate-spin" /> Transcribing...
             </div>
           )}
 
-          {/* Single text area — shows transcript if recording done, or typing box */}
-          {inputMode === "record" || transcript ? (
-            <textarea
-              className="w-full h-48 border rounded-md p-3 text-sm bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
-              placeholder="Your recorded response will appear here..."
-            />
-          ) : inputMode === "type" ? (
+          {/* Input Area */}
+          {inputMode === "type" ? (
             <textarea
               className="w-full h-48 border rounded-md p-3 text-sm bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
               value={typedText}
               onChange={(e) => setTypedText(e.target.value)}
               placeholder="Type your answer here..."
             />
-          ) : null}
+          ) : (
+            (recording || transcript) && (
+              <textarea
+                className="w-full h-48 border rounded-md p-3 text-sm bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                value={transcript}
+                onChange={(e) => setTranscript(e.target.value)}
+                placeholder="Your recorded response will appear here..."
+              />
+            )
+          )}
         </div>
       </div>
 
+      {/* Navigation Buttons */}
       <div className="flex justify-end gap-3 mt-6">
         {current < questions.length - 1 ? (
           <button

@@ -18,6 +18,8 @@ const Register = lazy(() => import("../pages/Register"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Notes = lazy(() => import("../pages/Notes"));
+const Report = lazy(() => import("../pages/ReportPage"));
+const SpeechEvaluation = lazy(() => import("../pages/SpeechEvaluation"));
 import ErrorBoundary from "../components/ErrorBoundary";
 import Pricing from "../pages/Pricing";
 
@@ -71,6 +73,30 @@ export default function AppRoutes() {
               <DashboardLayout>
                 <InterviewPage />
               </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <PrivateRoute>
+              <ErrorBoundary>
+                <DashboardLayout>
+                  <Report />
+                </DashboardLayout>
+              </ErrorBoundary>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/speech/:speech_id"
+          element={
+            <PrivateRoute>
+              <ErrorBoundary>
+                <DashboardLayout>
+                  <SpeechEvaluation />
+                </DashboardLayout>
+              </ErrorBoundary>
             </PrivateRoute>
           }
         />

@@ -1,58 +1,77 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Brain, Briefcase, Mic } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { getUserById } from "../features/user/userSlice";
+import { fetchUserReport } from "../features/report/reportSlice";
 
 export default function InterviewPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  // Redux store
-  const { user, status } = useAppSelector((state) => state.user);
+  // match ReportPage shape
+  const { user, status: userStatus } = useAppSelector((s) => s.user);
+  const {
+    data: report, // same as ReportPage
+    loading: reportLoading,
+    error: reportError,
+  } = useAppSelector((s) => s.report);
 
-  // Fallback from localStorage while Redux initializes
   const storedUser = localStorage.getItem("user_data");
   const activeUser = user || (storedUser ? JSON.parse(storedUser) : null);
 
-
-
-
-// console.log("user" + storedUser);
-  // 🧩 Fetch fresh user data on mount (like Profile)
+  // fetch user once
   useEffect(() => {
     if (!user) dispatch(getUserById());
   }, [dispatch, user]);
 
-  const [sessions] = useState([
-    {
-      interview_id: "8f2a91cd",
-      job_title: "Frontend Developer",
-      difficulty: "hard",
-      created_at: "2025-11-07",
-      score: 88,
-    },
-    {
-      interview_id: "b5a73e10",
-      job_title: "IT Support Specialist",
-      difficulty: "medium",
-      created_at: "2025-11-05",
-      score: 91,
-    },
-  ]);
+  // fetch report after user known
+  useEffect(() => {
+    if (activeUser?.profile_id) {
+      dispatch(fetchUserReport(activeUser.profile_id));
+    }
+  }, [dispatch, activeUser?.profile_id]);
 
-  const [speechSessions] = useState([
-    {
-      speech_id: "sp1",
-      speech_title: "The Power of Perseverance",
-      feedback: "Strong tone and clear structure.",
-      score: 87,
-      created_at: "2025-11-01",
-    },
-  ]);
+  // derive recent with a safe fallback for either shape:
+  const recent =
+    report?.data?.recent ?? // your working ReportPage path
+    report?.data?.data?.recent ?? // extra-nested fallback (per JSON you pasted)
+    [];
 
-  // 🌀 Loading UI
-  if (status === "loading" && !activeUser) {
+  // normalize to interviews (sessions) & speeches
+  const sessions = recent
+    .filter((it) => it?.type === "interview")
+    .map((it) => ({
+      interview_id: it.id,
+      job_title: it.title,
+      difficulty: it.difficulty,
+      status: it.status,
+      created_at: it.started_at,
+      ended_at: it.ended_at,
+      score:
+        typeof it.average_score === "number"
+          ? Math.round(it.average_score)
+          : null,
+    }));
+
+  const speechSessions = recent
+    .filter((it) => it?.type === "speech")
+    .map((it) => ({
+      speech_id: it.id,
+      speech_title: it.title,
+      feedback:
+        typeof it.metrics === "object" && it.metrics?.summary
+          ? it.metrics.summary
+          : it.metrics?.note || "",
+      score:
+        typeof it.average_score === "number"
+          ? Math.round(it.average_score)
+          : null,
+      created_at: it.started_at,
+    }));
+
+  // Loading / error states
+  if (userStatus === "loading" && !activeUser) {
     return (
       <div className="text-center py-20 text-[var(--color-text-muted)]">
         Loading user information...
@@ -60,7 +79,6 @@ export default function InterviewPage() {
     );
   }
 
-  // 🚫 If user still missing (unauthorized)
   if (!activeUser) {
     return (
       <div className="text-center py-20 text-red-500">
@@ -68,22 +86,29 @@ export default function InterviewPage() {
       </div>
     );
   }
+
+  if (reportLoading) {
+    return (
+      <div className="text-center py-20 text-[var(--color-text-muted)]">
+        Fetching your interviews...
+      </div>
+    );
+  }
+
+  if (reportError) {
+    return <div className="text-center py-20 text-red-500">{reportError}</div>;
+  }
+
   const handleStartInterview = (e) => {
     e.preventDefault();
     if (!activeUser) {
       navigate("/login");
       return;
     }
-
-    // Check credit and free trial
     const credits = activeUser?.credit_balance ?? 0;
     const trial = activeUser?.free_trial ?? 0;
-
-    if (credits <= 0 && trial <= 0) {
-      navigate("/pricing"); // redirect if no balance/trial
-    } else {
-      navigate("/interview/setup");
-    }
+    if (credits <= 0 && trial <= 0) navigate("/pricing");
+    else navigate("/interview/setup");
   };
 
   return (
@@ -166,26 +191,35 @@ export default function InterviewPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sessions.map((s) => (
-              <div
-                key={s.interview_id}
-                onClick={() => navigate(`/interview/${s.interview_id}`)}
-                className="p-5 rounded-xl shadow-md border hover:shadow-lg transition cursor-pointer"
-                style={{
-                  backgroundColor: "var(--color-bg-panel)",
-                  borderColor: "var(--color-border)",
-                }}
-              >
-                <h3 className="font-semibold text-[var(--color-text-main)] mb-1">
-                  {s.job_title}
-                </h3>
-                <p className="text-sm text-[var(--color-text-muted)] mb-2">
-                  Difficulty: <span className="capitalize">{s.difficulty}</span>
-                </p>
-                <div className="flex justify-between text-xs opacity-70">
-                  <span>{s.created_at}</span>
-                  <span>Score: {s.score}%</span>
+              <Link to="/reports">
+                <div
+                  key={s.interview_id}
+                  className="p-5 rounded-xl shadow-md border hover:shadow-lg transition cursor-pointer"
+                  style={{
+                    backgroundColor: "var(--color-bg-panel)",
+                    borderColor: "var(--color-border)",
+                  }}
+                >
+                  <h3 className="font-semibold text-[var(--color-text-main)] mb-1">
+                    {s.job_title}
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-muted)] mb-2">
+                    Difficulty:{" "}
+                    <span className="capitalize">{s.difficulty}</span>
+                  </p>
+                  <p className="text-sm text-[var(--color-text-muted)] mb-2">
+                    Status: <span className="capitalize">{s.status}</span>
+                  </p>
+                  <div className="flex justify-between text-xs opacity-70">
+                    <span>
+                      {s.created_at
+                        ? new Date(s.created_at).toLocaleString()
+                        : "—"}
+                    </span>
+                    <span>Score: {s.score ?? "N/A"}%</span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
@@ -202,35 +236,38 @@ export default function InterviewPage() {
           feedback on tone, clarity, and confidence.
         </p>
 
-        <button
-          onClick={() => navigate("/speech")}
-          className="px-4 py-2 rounded-md bg-gradient-to-r from-[var(--color-primary)] to-blue-500 text-white font-medium shadow hover:opacity-90 transition"
-        >
+        <button className="px-4 py-2 rounded-md bg-gradient-to-r from-[var(--color-primary)] to-blue-500 text-white font-medium shadow hover:opacity-90 transition">
           🎙️ Go to Speech Evaluation
         </button>
 
         {speechSessions.length > 0 && (
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {speechSessions.map((s) => (
-              <div
-                key={s.speech_id}
-                className="p-5 rounded-xl shadow-md border hover:shadow-lg transition"
-                style={{
-                  backgroundColor: "var(--color-bg-panel)",
-                  borderColor: "var(--color-border)",
-                }}
-              >
-                <h3 className="font-semibold text-[var(--color-text-main)] mb-1">
-                  {s.speech_title}
-                </h3>
-                <p className="text-sm text-[var(--color-text-muted)] mb-2">
-                  {s.feedback}
-                </p>
-                <div className="flex justify-between text-xs opacity-70">
-                  <span>{s.created_at}</span>
-                  <span>Score: {s.score}%</span>
+              <Link to="/reports">
+                <div
+                  key={s.speech_id}
+                  className="p-5 rounded-xl shadow-md border hover:shadow-lg transition"
+                  style={{
+                    backgroundColor: "var(--color-bg-panel)",
+                    borderColor: "var(--color-border)",
+                  }}
+                >
+                  <h3 className="font-semibold text-[var(--color-text-main)] mb-1">
+                    {s.speech_title}
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-muted)] mb-2">
+                    {s.feedback || "AI feedback coming soon"}
+                  </p>
+                  <div className="flex justify-between text-xs opacity-70">
+                    <span>
+                      {s.created_at
+                        ? new Date(s.created_at).toLocaleString()
+                        : "—"}
+                    </span>
+                    <span>Score: {s.score ?? "N/A"}%</span>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
