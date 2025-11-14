@@ -14,26 +14,11 @@ import {
   Play,
   CheckCircle2,
   SwitchCamera,
+  ArrowLeft,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import useVoiceRecorder from "../app/useVoiceRecorder";
-
-// 🎵 Animated wave signal for recording
-function WaveBars() {
-  return (
-    <div className="flex items-end gap-1 h-5">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <motion.span
-          key={i}
-          className="w-1 rounded-sm bg-[var(--color-primary)]/80"
-          initial={{ scaleY: 0.3 }}
-          animate={{ scaleY: [0.3, 1, 0.5, 0.9, 0.3] }}
-          transition={{ duration: 1, repeat: Infinity, delay: i * 0.07 }}
-        />
-      ))}
-    </div>
-  );
-}
+import LiveWaveform from "../components/LiveWaveform";
 
 export default function InterviewSession() {
   const { state } = useLocation();
@@ -65,10 +50,11 @@ export default function InterviewSession() {
   const [cameraFacing, setCameraFacing] = useState("user");
 
   const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const voicesRef = useRef([]);
+  const cameraStreamRef = useRef(null);
+  const audioVisStreamRef = useRef(null); // for waveform only
   const timerRef = useRef(null);
   const recordTimeoutRef = useRef(null);
+  const voicesRef = useRef([]);
 
   const {
     recording,
@@ -78,12 +64,12 @@ export default function InterviewSession() {
     stopRecording,
   } = useVoiceRecorder();
 
-  // 🚫 Redirect if opened directly
+  // 🔄 redirect if opened directly
   useEffect(() => {
     if (!interviewId) navigate("/interview/setup", { replace: true });
   }, [interviewId, navigate]);
 
-  // 🧩 Fetch questions
+  // 🧩 fetch questions
   useEffect(() => {
     if (!interviewId) return;
     (async () => {
@@ -100,7 +86,7 @@ export default function InterviewSession() {
     })();
   }, [interviewId]);
 
-  // 🔊 Load speech synthesis voices
+  // 🔊 load speech synthesis voices
   useEffect(() => {
     const loadVoices = () =>
       (voicesRef.current = window.speechSynthesis.getVoices());
@@ -120,28 +106,33 @@ export default function InterviewSession() {
     window.speechSynthesis.speak(u);
   };
 
-  // 🎥 Camera controls
+  // 🎥 camera helpers
   const startCamera = async (facing = "user") => {
     try {
       const constraints = { video: { facingMode: facing } };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current?.getTracks()?.forEach((t) => t.stop());
-      streamRef.current = stream;
+
+      cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
+      cameraStreamRef.current = stream;
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.onloadedmetadata = () =>
           videoRef.current.play().catch(() => {});
       }
+
       setPermissions((p) => ({ ...p, camera: true }));
-    } catch {
+    } catch (err) {
+      console.error("Camera error:", err);
       alert("⚠️ Camera permission denied or not available.");
     }
   };
 
   const toggleCamera = async () => {
-    if (!permissions.camera) await startCamera(cameraFacing);
-    else {
-      streamRef.current?.getTracks()?.forEach((t) => t.stop());
+    if (!permissions.camera) {
+      await startCamera(cameraFacing);
+    } else {
+      cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
       if (videoRef.current) videoRef.current.srcObject = null;
       setPermissions((p) => ({ ...p, camera: false }));
     }
@@ -153,7 +144,19 @@ export default function InterviewSession() {
     await startCamera(nextFacing);
   };
 
-  // 🔉 Speaker toggle
+  // 🎤 mic permission (like PublicSpeechSession)
+  const enableMic = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((t) => t.stop());
+      setPermissions((p) => ({ ...p, mic: true }));
+    } catch (err) {
+      console.error("Mic permission error:", err);
+      alert("⚠️ Microphone permission denied or unavailable.");
+    }
+  };
+
+  // 🔉 speaker toggle
   const toggleSpeaker = () => {
     const synth = window.speechSynthesis;
     if (!synth) return;
@@ -161,7 +164,32 @@ export default function InterviewSession() {
     setPermissions((p) => ({ ...p, speaker: !p.speaker }));
   };
 
-  // ⏱ Timer per question
+  // 🔊 waveform audio stream (separate from useVoiceRecorder)
+  const startWaveformStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioVisStreamRef.current?.getTracks()?.forEach((t) => t.stop());
+      audioVisStreamRef.current = stream;
+    } catch (err) {
+      console.error("Waveform audio error:", err);
+    }
+  };
+
+  const stopWaveformStream = () => {
+    audioVisStreamRef.current?.getTracks()?.forEach((t) => t.stop());
+    audioVisStreamRef.current = null;
+  };
+
+  // attach camera stream to video on re-render
+  useEffect(() => {
+    if (permissions.camera && cameraStreamRef.current && videoRef.current) {
+      videoRef.current.srcObject = cameraStreamRef.current;
+      videoRef.current.onloadedmetadata = () =>
+        videoRef.current.play().catch(() => {});
+    }
+  }, [permissions.camera, started]);
+
+  // ⏱ per-question timer
   useEffect(() => {
     if (!started) return;
     setTimeLeft(120);
@@ -178,33 +206,46 @@ export default function InterviewSession() {
       "0"
     )}`;
 
-  // 🎬 Start
-  const startInterview = () => {
+  // 🎬 start interview (now async, auto-start camera)
+  const startInterview = async () => {
+    if (!permissions.mic) {
+      await enableMic().catch(() => {});
+    }
+    if (!permissions.camera || !cameraStreamRef.current) {
+      await startCamera(cameraFacing).catch(() => {});
+    }
     setStarted(true);
-    speakQuestion(questions[0]?.question_text);
+    if (questions[0]?.question_text) {
+      speakQuestion(questions[0].question_text);
+    }
   };
 
-  // 🎙️ Recording flow with cap
+  // 🎙 recording flow with 2-min cap + real waveform
   const startRecordingWithCap = async () => {
     if (recordBlocked) return;
     setInputMode("record");
     setIsTranscribing(false);
-    await startRecording();
+
+    // start visual waveform audio stream
+    await startWaveformStream();
+    await startRecording(); // from useVoiceRecorder
+
     clearTimeout(recordTimeoutRef.current);
     recordTimeoutRef.current = setTimeout(async () => {
       await stopRecordingSafe();
       setRecordBlocked(true);
-    }, 120000); // 2 minutes cap
+    }, 120000);
   };
 
   const stopRecordingSafe = async () => {
     clearTimeout(recordTimeoutRef.current);
     setIsTranscribing(true);
+    stopWaveformStream();
     await stopRecording(questions[current]?.id, interviewId);
     setIsTranscribing(false);
   };
 
-  // ⏭ Next
+  // ⏭ next question
   const nextQuestion = async () => {
     if (recording) await stopRecordingSafe();
 
@@ -218,7 +259,6 @@ export default function InterviewSession() {
       },
     ]);
 
-    // reset input states for next question
     setTypedText("");
     setTranscript("");
     setInputMode("none");
@@ -226,17 +266,20 @@ export default function InterviewSession() {
 
     if (current < questions.length - 1) {
       setCurrent((c) => c + 1);
-      speakQuestion(questions[current + 1]?.question_text);
+      if (questions[current + 1]?.question_text) {
+        speakQuestion(questions[current + 1].question_text);
+      }
     }
   };
 
-  //  Submit
+  // ✅ submit interview for evaluation
   const submitInterview = async () => {
     try {
       if (recording) await stopRecordingSafe();
       setEvaluating(true);
       window.speechSynthesis.cancel();
-      streamRef.current?.getTracks()?.forEach((t) => t.stop());
+      cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
+      stopWaveformStream();
 
       const lastText = `${transcript || ""} ${typedText || ""}`.trim();
 
@@ -254,12 +297,12 @@ export default function InterviewSession() {
       };
 
       const res = await axiosClient.post("/ai/evaluate", payload);
-      if (res.data.success)
+      if (res.data.success) {
         setTimeout(
           () => navigate(`/evaluation/${interviewId}`, { replace: true }),
           1800
         );
-      else {
+      } else {
         alert(res.data.message || "Evaluation failed");
         setEvaluating(false);
       }
@@ -270,7 +313,18 @@ export default function InterviewSession() {
     }
   };
 
-  // 🌀 Evaluating animation
+  // 🧹 global cleanup on unmount
+  useEffect(() => {
+    return () => {
+      clearInterval(timerRef.current);
+      clearTimeout(recordTimeoutRef.current);
+      cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
+      stopWaveformStream();
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  // 🌀 evaluating overlay
   if (evaluating)
     return (
       <div className="flex flex-col items-center justify-center h-[70vh] text-center space-y-6">
@@ -280,13 +334,13 @@ export default function InterviewSession() {
             Evaluating your responses...
           </p>
           <p className="text-sm text-[var(--color-text-muted)] mt-2">
-            This may take a few seconds.Pleas don't refresh the browser
+            This may take a few seconds. Please don&apos;t refresh the browser.
           </p>
         </div>
       </div>
     );
 
-  // 🖥️ Loading
+  // 🖥️ loading
   if (loading || !interviewId)
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh]">
@@ -295,15 +349,22 @@ export default function InterviewSession() {
       </div>
     );
 
-  // ⚙️ Permission setup
+  // ⚙️ permission setup (like PublicSpeechSession)
   if (!started)
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
+      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 mb-4 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition"
+        >
+          <ArrowLeft size={18} /> Back
+        </button>
+
         <h2 className="text-xl font-semibold mb-4 text-[var(--color-primary)]">
           Setup Permissions
         </h2>
 
-        <div className="flex gap-6 mb-6">
+        <div className="flex gap-6 mb-6 flex-wrap justify-center">
           <button
             onClick={toggleCamera}
             className={`flex flex-col items-center px-4 py-2 rounded-md border ${
@@ -321,6 +382,17 @@ export default function InterviewSession() {
           >
             <SwitchCamera />
             <span className="text-xs mt-1">Flip</span>
+          </button>
+          <button
+            onClick={enableMic}
+            className={`flex flex-col items-center px-4 py-2 rounded-md border ${
+              permissions.mic
+                ? "text-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)] animate-pulse"
+                : "text-gray-400 hover:text-[var(--color-primary)]"
+            }`}
+          >
+            <Mic />
+            <span className="text-xs mt-1">Microphone</span>
           </button>
           <button
             onClick={toggleSpeaker}
@@ -344,7 +416,7 @@ export default function InterviewSession() {
       </div>
     );
 
-  // 🧩 Main UI
+  // 🧩 main UI (camera + real waveform + everything else)
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -380,7 +452,7 @@ export default function InterviewSession() {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Camera */}
         <div className="relative flex flex-col items-center">
-          {permissions.camera ? (
+          {permissions.camera && cameraStreamRef.current ? (
             <video
               ref={videoRef}
               autoPlay
@@ -420,7 +492,7 @@ export default function InterviewSession() {
           </div>
         </div>
 
-        {/* Input Controls */}
+        {/* Input Controls + Waveform + Transcript */}
         <div className="flex flex-col">
           <div className="flex gap-3 mb-3">
             <button
@@ -453,10 +525,13 @@ export default function InterviewSession() {
             </button>
           </div>
 
-          {/* Recording Signal */}
+          {/* Real waveform when recording */}
           {recording && (
             <div className="flex items-center gap-3 mb-2">
-              <WaveBars />
+              <LiveWaveform
+                stream={audioVisStreamRef.current}
+                active={recording}
+              />
               <span className="text-xs text-[var(--color-text-muted)]">
                 Recording… (auto-stops at 02:00)
               </span>

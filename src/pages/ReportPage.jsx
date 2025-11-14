@@ -96,6 +96,7 @@ export default function ReportPage() {
     <div className="max-w-6xl mx-auto p-6 space-y-8">
       {/* ===== Header Section ===== */}
       <div className="text-center">
+        
         <h1 className="text-3xl font-semibold text-[var(--color-primary)]">
           AI Interview & Speech Report
         </h1>

@@ -36,7 +36,7 @@ export default function InterviewSessionSetup() {
 
     try {
       const payload = {
-         first_name: user?.first_name || "Candidate",
+        first_name: user?.first_name || "Candidate",
         job_title: form.job_title,
         job_description: form.job_description || null,
         difficulty: form.difficulty,

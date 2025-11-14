@@ -9,7 +9,6 @@ export default function Profile() {
   const dispatch = useAppDispatch();
   const { user, status } = useAppSelector((state) => state.user);
   const authUser = useAppSelector((state) => state.auth.user);
-console.log(user);
   const [form, setForm] = useState({});
   const [feedback, setFeedback] = useState("");
   const [isActive, setIsActive] = useState(false);
@@ -68,8 +67,14 @@ console.log(user);
         profile_url = res.data.url; // e.g. /uploads/...
       }
 
-      const { profile_id, first_name, last_name, work } = form;
-      const payload = { profile_id, first_name, last_name, work, profile_url };
+      const { profile_id, first_name, last_name, profession } = form;
+      const payload = {
+        profile_id,
+        first_name,
+        last_name,
+        profession,
+        profile_url,
+      };
 
       await userApi.updateUser(payload);
 
@@ -247,7 +252,7 @@ if (res.data?.userinfo) {
               {form.first_name} {form.last_name}
             </h2>
             <p className="text-[var(--color-text-muted)] text-sm mt-1">
-              {form.work || "—"}
+              {form.profession || "—"}
             </p>
             <p className="text-[var(--color-text-muted)] mt-2">
               {form.user_email}
@@ -456,8 +461,8 @@ if (res.data?.userinfo) {
                 />
                 <input
                   type="text"
-                  name="work"
-                  value={form.work || ""}
+                  name="profession"
+                  value={form.profession || ""}
                   onChange={handleChange}
                   placeholder="Profession"
                   className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"

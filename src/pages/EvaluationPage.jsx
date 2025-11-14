@@ -101,7 +101,7 @@ export default function EvaluationPage() {
         </h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigate("/interview/session")}
+            onClick={() => navigate("/interview")}
             className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-[var(--color-primary)] rounded-md hover:opacity-90 transition-all hover:scale-[1.02]"
           >
             <RefreshCcw size={16} /> Retake

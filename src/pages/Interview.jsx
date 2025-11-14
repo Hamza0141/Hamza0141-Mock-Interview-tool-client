@@ -21,16 +21,16 @@ export default function InterviewPage() {
   const activeUser = user || (storedUser ? JSON.parse(storedUser) : null);
 
   // fetch user once
-  useEffect(() => {
-    if (!user) dispatch(getUserById());
-  }, [dispatch, user]);
+useEffect(() => {
+  dispatch(getUserById());
+}, [dispatch]);
 
   // fetch report after user known
-  useEffect(() => {
-    if (activeUser?.profile_id) {
-      dispatch(fetchUserReport(activeUser.profile_id));
-    }
-  }, [dispatch, activeUser?.profile_id]);
+useEffect(() => {
+  if (user?.profile_id) {
+    dispatch(fetchUserReport(user.profile_id));
+  }
+}, [dispatch, user?.profile_id]);
 
   // derive recent with a safe fallback for either shape:
   const recent =
@@ -54,21 +54,45 @@ export default function InterviewPage() {
           : null,
     }));
 
-  const speechSessions = recent
-    .filter((it) => it?.type === "speech")
-    .map((it) => ({
+const speechSessions = recent
+  .filter((it) => it?.type === "speech")
+  .map((it) => {
+    const metrics =
+      it && typeof it.metrics === "object" && it.metrics !== null
+        ? it.metrics
+        : {};
+
+    // derive feedback text (summary or note)
+    const feedbackText =
+      metrics.summary ??
+      metrics.note ??
+      (typeof it.metrics === "string" ? it.metrics : null) ??
+      "";
+
+    // derive status based on available fields
+    const status =
+      it.status === "completed"
+        ? "completed"
+        : it.status === "pending"
+        ? "pending"
+        : metrics.note
+        ? "pending"
+        : metrics.summary
+        ? "completed"
+        : "pending";
+
+    return {
       speech_id: it.id,
-      speech_title: it.title,
-      feedback:
-        typeof it.metrics === "object" && it.metrics?.summary
-          ? it.metrics.summary
-          : it.metrics?.note || "",
+      speech_title: it.title ?? "Untitled speech",
+      feedback: feedbackText, // raw feedback (may be empty if pending)
+      status, // <— HERE is your status value
       score:
         typeof it.average_score === "number"
           ? Math.round(it.average_score)
           : null,
       created_at: it.started_at,
-    }));
+    };
+  });
 
   // Loading / error states
   if (userStatus === "loading" && !activeUser) {
@@ -99,18 +123,30 @@ export default function InterviewPage() {
     return <div className="text-center py-20 text-red-500">{reportError}</div>;
   }
 
-  const handleStartInterview = (e) => {
+  const requireCreditsAndNavigate = (targetPath) => (e) => {
     e.preventDefault();
+    // 1) Must be logged in
     if (!activeUser) {
       navigate("/login");
       return;
     }
+    // 2) Check credits / free trial
     const credits = activeUser?.credit_balance ?? 0;
     const trial = activeUser?.free_trial ?? 0;
-    if (credits <= 0 && trial <= 0) navigate("/pricing");
-    else navigate("/interview/setup");
+    if (credits <= 0 && trial <= 0) {
+      navigate("/pricing");
+    } else {
+      navigate(targetPath);
+    }
   };
+  // interview button handler
+  const handleStartInterview = requireCreditsAndNavigate(
+    "/interview/interviewSetup"
+  );
+  // speech button handler
+  const handleStartSpeech = requireCreditsAndNavigate("/speech/setup");
 
+  console.log(recent);
   return (
     <div className="min-h-screen">
       {/* ===== HEADER ===== */}
@@ -236,13 +272,16 @@ export default function InterviewPage() {
           feedback on tone, clarity, and confidence.
         </p>
 
-        <button className="px-4 py-2 rounded-md bg-gradient-to-r from-[var(--color-primary)] to-blue-500 text-white font-medium shadow hover:opacity-90 transition">
-          🎙️ Go to Speech Evaluation
+        <button
+          className="px-4 py-2 rounded-md bg-gradient-to-r from-[var(--color-primary)] to-blue-500 text-white font-medium shadow hover:opacity-90 transition"
+          onClick={handleStartSpeech}
+        >
+          🎙️ Go to Speech Practice
         </button>
 
-        {speechSessions.length > 0 && (
+        {speechSessions?.length > 0 && (
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {speechSessions.map((s) => (
+            {speechSessions?.map((s) => (
               <Link to="/reports">
                 <div
                   key={s.speech_id}
@@ -256,7 +295,7 @@ export default function InterviewPage() {
                     {s.speech_title}
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)] mb-2">
-                    {s.feedback || "AI feedback coming soon"}
+                    Status: {s.status || "AI feedback coming soon"}
                   </p>
                   <div className="flex justify-between text-xs opacity-70">
                     <span>
