@@ -189,17 +189,15 @@ const speechSessions = recent
             <p>
               💰 Credits:{" "}
               <span className="font-semibold">
-                {activeUser.credit_balance ?? 0}
+                {activeUser.credit_balance }
               </span>
             </p>
+              {activeUser?.free_trial == 1 && (
             <p>
               🎟️ Free Trial:{" "}
-              {activeUser.free_trial > 0 ? (
                 <span className="text-green-300 font-semibold">Available</span>
-              ) : (
-                <span className="text-red-300">Used</span>
-              )}
             </p>
+              ) }
           </div>
         </div>
       </section>

@@ -306,10 +306,12 @@ if (res.data?.userinfo) {
                   {form.credit_balance ?? 0} Credits
                 </span>
               </li>
-              <li>
-                <strong>Free Trial:</strong>{" "}
-                {form.free_trial ? "Active" : "Used"}
-              </li>
+              {form?.free_trial == 1 && (
+                <li>
+                  <strong>Free Trial:</strong>{" "}
+                  {form.free_trial ? "Active" : "Used"}
+                </li>
+              )}
             </ul>
           </div>
 
