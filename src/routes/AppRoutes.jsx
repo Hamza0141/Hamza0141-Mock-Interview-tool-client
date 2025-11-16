@@ -14,7 +14,8 @@ const PublicSpeechSetup = lazy(() =>
   import("../pages/PublicSpeechSetup")
 );
 const PublicSession = lazy(() => import("../pages/PublicSpeechSession"));
-
+const TicketsPage  = lazy(() => import("../pages/TicketsPage"));
+const TicketDetailPage  = lazy(() => import("../pages/TicketDetailPage"));
 const InterviewSession = lazy(() => import("../pages/InterviewSession"));
 const EvaluationPage = lazy(() => import("../pages/EvaluationPage"));
 const Home = lazy(() => import("../pages/Home"));
@@ -81,6 +82,30 @@ export default function AppRoutes() {
               <DashboardLayout>
                 <InterviewPage />
               </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tickets"
+          element={
+            <PrivateRoute>
+              <ErrorBoundary>
+                <DashboardLayout>
+                  <TicketsPage />
+                </DashboardLayout>
+              </ErrorBoundary>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tickets/:ticketId"
+          element={
+            <PrivateRoute>
+              <ErrorBoundary>
+                <DashboardLayout>
+                  <TicketDetailPage />
+                </DashboardLayout>
+              </ErrorBoundary>
             </PrivateRoute>
           }
         />
