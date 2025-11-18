@@ -63,7 +63,7 @@ export default function TicketDetailPage() {
   const { user } = useAppSelector((s) => s.user);
   const { detail, detailStatus, detailError, messageStatus, messageError } =
     useAppSelector((s) => s.tickets);
-
+const ticketOwnerProfile_id = detail?.profile_id;
   const [newMessage, setNewMessage] = useState("");
   const [localMsg, setLocalMsg] = useState("");
 

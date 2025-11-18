@@ -14,7 +14,7 @@ import {
 import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchUserReport } from "../features/report/reportSlice";
-
+import { getUserById } from "../features/user/userSlice";
 // ---------- helpers ----------
 function fmtDate(d) {
   try {
@@ -82,6 +82,11 @@ export default function DashboardPage() {
 
   const { user } = useAppSelector((s) => s.user);
   const { data: report, loading, error } = useAppSelector((s) => s.report);
+
+  // fetch user once
+  useEffect(() => {
+    dispatch(getUserById());
+  }, [dispatch]);
 
   // fetch report when we know the user
   useEffect(() => {
@@ -195,12 +200,14 @@ export default function DashboardPage() {
             <p className="text-[var(--color-text-muted)]">Credits</p>
             <p className="text-lg font-semibold">{user?.credit_balance ?? 0}</p>
           </div>
-          <div className="text-xs bg-[var(--color-bg-panel)] border border-[var(--color-border)] rounded-lg px-4 py-2">
-            <p className="text-[var(--color-text-muted)]">Free Trial</p>
-            <p className="text-sm font-semibold">
-              {user?.free_trial > 0 ? "Available" : "Used"}
-            </p>
-          </div>
+          {user?.free_trial == 1 && (
+            <div className="text-xs bg-[var(--color-bg-panel)] border border-[var(--color-border)] rounded-lg px-4 py-2">
+              <p className="text-[var(--color-text-muted)]">Free Trial</p>
+              <p className="text-sm font-semibold">
+                {user?.free_trial > 0 ? "Available" : "Used"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

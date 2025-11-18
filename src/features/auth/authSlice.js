@@ -10,9 +10,7 @@ export const registerUser = createAsyncThunk(
       return res.data; // backend sends { status, message, ... }
     } catch (err) {
       console.error("❌ Register error:", err.response?.data);
-      return rejectWithValue(
-        err.response?.data?.error || "Registration failed"
-      );
+      return rejectWithValue(err.message || "Registration failed");
     }
   }
 );
@@ -26,9 +24,7 @@ export const verifyEmail = createAsyncThunk(
       return res.data; // backend sets cookie & returns { success, message, data: { user } }
     } catch (err) {
       console.error("❌ verifyEmail error:", err.response?.data || err.message);
-      return rejectWithValue(
-        err.response?.data?.message || "Verification failed"
-      );
+      return rejectWithValue(err.message || "Verification failed");
     }
   }
 );
@@ -46,8 +42,9 @@ export const loginUser = createAsyncThunk(
 
       return { user };
     } catch (err) {
-      console.error("❌ Login error:", err.response?.data);
-      return rejectWithValue(err.response?.data?.message || "Login failed");
+      console.log(err);
+      console.error("❌ Login error:", err.message);
+      return rejectWithValue(err.message || "Login failed");
     }
   }
 );

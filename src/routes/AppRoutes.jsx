@@ -5,6 +5,10 @@ import Loader from "../components/Loader";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import DashboardLayout from "../layouts/DashboardLayout";
 
+
+//terms and conditions 
+const TermsPage = lazy(() => import("../pages/TermsPage"));
+const PrivacyPolicyPage = lazy(() => import("../pages/PrivacyPolicyPage"));
 const InterviewPage = lazy(() => import("../pages/Interview"));
 const InterviewSetup = lazy(() =>
   import("../pages/InterviewSessionSetup")
@@ -37,8 +41,8 @@ const NotFound = lazy(() => import("../pages/NotFound"));
 
 export default function AppRoutes() {
     const { user, status } = useAppSelector((state) => state.user);
-   const profileId = user.profile_id;
-   console.log(profileId);
+   const profileId = user?.profile_id;
+
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -46,6 +50,8 @@ export default function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
         {/* Private routes with Dashboard layout */}
         <Route
           path="/dashboard"

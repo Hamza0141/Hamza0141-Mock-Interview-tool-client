@@ -133,7 +133,6 @@ export default function Profile() {
     setShareMsg("");
     setShareLoading(false);
   };
-console.log(receiverEmail);
   const handleCheckUser = async (e) => {
     e.preventDefault();
     setShareMsg("");
@@ -202,7 +201,7 @@ if (res.data?.userinfo) {
       setShareLoading(false);
     }
   };
-  // --------------------------------------
+
 
   const imgSrc = form.profile_url
     ? `${import.meta.env.VITE_API_IMG_URL}${form.profile_url}?t=${Date.now()}`

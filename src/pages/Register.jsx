@@ -18,6 +18,10 @@ export default function Register() {
   const [showVerify, setShowVerify] = useState(false);
   const [feedback, setFeedback] = useState({ type: "", text: "" });
 
+  // ✅ New: terms & conditions state
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
+
   // Move to verify step after registration
   useEffect(() => {
     if (status === "succeeded") {
@@ -50,6 +54,13 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
+    // ✅ Require terms & conditions
+    if (!acceptedTerms) {
+      setTermsError(true);
+      return;
+    }
+
     if (!isStrongPassword(form.user_password)) {
       setFeedback({
         type: "error",
@@ -57,6 +68,7 @@ export default function Register() {
       });
       return;
     }
+
     const action = await dispatch(registerUser(form));
     if (registerUser.rejected.match(action)) {
       setFeedback({ type: "error", text: action.payload });
@@ -136,6 +148,53 @@ export default function Register() {
               className="w-full px-4 py-2 rounded-md border focus:ring-2 focus:ring-[var(--color-primary)]"
             />
 
+            {/* ✅ Terms & Conditions checkbox */}
+            <div className="flex items-start gap-2 text-xs mt-1">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => {
+                  setAcceptedTerms(e.target.checked);
+                  if (e.target.checked) setTermsError(false);
+                  if (
+                    feedback.type === "error" &&
+                    feedback.text.includes("Terms")
+                  )
+                    setFeedback({ type: "", text: "" });
+                }}
+                className={`mt-0.5 h-4 w-4 rounded border ${
+                  termsError
+                    ? "border-red-500 ring-1 ring-red-500"
+                    : "border-[var(--color-border)]"
+                }`}
+              />
+              <label
+                htmlFor="terms"
+                className={`leading-snug ${
+                  termsError ? "text-red-500" : "text-[var(--color-text-muted)]"
+                }`}
+              >
+                I have read and agree to the{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/terms")}
+                  className="text-[var(--color-primary)] underline hover:opacity-80"
+                >
+                  Terms &amp; Conditions
+                </button>{" "}
+                and{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/privacy")}
+                  className="text-[var(--color-primary)] underline hover:opacity-80"
+                >
+                  Privacy Policy
+                </button>
+                .
+              </label>
+            </div>
+
             {feedback.text && (
               <p
                 className={`text-sm mt-2 p-2 rounded-md text-center ${
@@ -159,6 +218,18 @@ export default function Register() {
             >
               {status === "loading" ? "Creating..." : "Register"}
             </button>
+
+            {/* ✅ Back to login link (like in Login page but reversed) */}
+            <p className="text-center text-sm mt-4 text-[var(--color-text-muted)]">
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="text-[var(--color-secondary)] hover:underline"
+              >
+                Login
+              </button>
+            </p>
           </form>
         ) : (
           <form onSubmit={handleVerify} className="space-y-4">
@@ -198,6 +269,18 @@ export default function Register() {
             >
               {status === "verifying" ? "Verifying..." : "Verify Email"}
             </button>
+
+            {/* Small back-to-login hint here too if you want */}
+            <p className="text-center text-xs mt-3 text-[var(--color-text-muted)]">
+              Entered the wrong email?{" "}
+              <button
+                type="button"
+                onClick={() => setShowVerify(false)}
+                className="text-[var(--color-secondary)] hover:underline"
+              >
+                Go back and edit
+              </button>
+            </p>
           </form>
         )}
       </div>

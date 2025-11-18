@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Loader2, TrendingUp, BookOpen, Clock, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { getUserById } from "../features/user/userSlice";
 
 function fmtDate(d) {
   try {
@@ -37,33 +38,19 @@ export default function ReportPage() {
     error,
   } = useAppSelector((state) => state.report);
 
+  // fetch user once
+  useEffect(() => {
+    dispatch(getUserById());
+  }, [dispatch]);
+
+  // fetch report when user is known
   useEffect(() => {
     if (user?.profile_id) {
       dispatch(fetchUserReport(user.profile_id));
     }
   }, [dispatch, user?.profile_id]);
 
-  if (loading)
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh]">
-        <Loader2
-          className="animate-spin text-[var(--color-primary)]"
-          size={36}
-        />
-        <p className="mt-3 text-[var(--color-text-muted)] text-sm">
-          Fetching your AI performance summary...
-        </p>
-      </div>
-    );
-
-  if (error || !report)
-    return (
-      <div className="text-center py-20 text-[var(--color-text-muted)]">
-        {error || "No performance data available yet."}
-      </div>
-    );
-
-  // ---- Safe unwrapping with defaults
+  // ---- Safe unwrapping with defaults (must be BEFORE early returns) ----
   const safeData = report?.data ?? report ?? {};
   const performanceComparison = safeData?.performanceComparison ?? {
     interviews: { avgScore: 0, count: 0 },
@@ -71,7 +58,7 @@ export default function ReportPage() {
   };
   const recent = Array.isArray(safeData?.recent) ? safeData.recent : [];
 
-  // Precompute cards safely
+  // Precompute cards safely (also BEFORE early returns)
   const cards = useMemo(
     () => [
       {
@@ -92,11 +79,34 @@ export default function ReportPage() {
     [performanceComparison]
   );
 
+  // ---- Early returns AFTER all hooks ----
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh]">
+        <Loader2
+          className="animate-spin text-[var(--color-primary)]"
+          size={36}
+        />
+        <p className="mt-3 text-[var(--color-text-muted)] text-sm">
+          Fetching your AI performance summary...
+        </p>
+      </div>
+    );
+  }
+
+  if (error || !report) {
+    return (
+      <div className="text-center py-20 text-[var(--color-text-muted)]">
+        {error || "No performance data available yet."}
+      </div>
+    );
+  }
+
+  // ---- Main render ----
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
       {/* ===== Header Section ===== */}
       <div className="text-center">
-        
         <h1 className="text-3xl font-semibold text-[var(--color-primary)]">
           AI Interview & Speech Report
         </h1>
@@ -146,10 +156,9 @@ export default function ReportPage() {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {recent.map((raw, idx) => {
-              // defensive normalization per item
               const item = {
                 id: raw?.id ?? `item-${idx}`,
-                type: raw?.type ?? "interview", // default
+                type: raw?.type ?? "interview",
                 title: raw?.title ?? "Untitled",
                 status: raw?.status ?? "active",
                 started_at: raw?.started_at ?? null,
@@ -159,7 +168,6 @@ export default function ReportPage() {
                     ? raw.metrics
                     : { note: "awaiting evaluation" },
                 skills: Array.isArray(raw?.skills) ? raw.skills : [],
-                // difficulty only for interviews; may be undefined for speeches
                 difficulty:
                   raw?.type === "interview" && raw?.difficulty
                     ? String(raw.difficulty)
@@ -172,7 +180,6 @@ export default function ReportPage() {
                 ? item.difficulty.toUpperCase()
                 : "—";
 
-              // limit metrics to numeric values; skip undefined/null
               const metricEntries = Object.entries(item.metrics || {}).filter(
                 ([k, v]) =>
                   k !== "overall" && typeof v === "number" && Number.isFinite(v)
@@ -220,7 +227,6 @@ export default function ReportPage() {
                     </span>
                   </div>
 
-                  {/* Average Score */}
                   <div className="mt-4 flex items-center gap-2">
                     <TrendingUp
                       size={16}
@@ -233,14 +239,12 @@ export default function ReportPage() {
                     </p>
                   </div>
 
-                  {/* Metrics */}
                   {metricEntries.length > 0 && !item.metrics?.note && (
                     <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-[var(--color-text-muted)]">
                       {metricEntries.slice(0, 3).map(([k, v], i) => (
                         <div
                           key={i}
                           className="bg-[var(--color-bg-panel)] rounded-md py-1 text-center hover:shadow-md transition-all"
-                          style={{ border: `1px solid transparent` }}
                         >
                           <p className="font-medium" style={{ color: accent }}>
                             {Math.round(v)}%
@@ -253,7 +257,6 @@ export default function ReportPage() {
                     </div>
                   )}
 
-                  {/* Skills */}
                   {item.skills.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1">
                       {item.skills.slice(0, 4).map((skill, i) => (

@@ -154,7 +154,6 @@ export default function NotificationsPage() {
       return;
     }
     await dispatch(markNotificationRead(n.notification_id));
-    handleNavigate(n);
   };
 
   const handleMarkAllRead = () => {

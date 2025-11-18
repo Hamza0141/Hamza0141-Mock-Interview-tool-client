@@ -3,7 +3,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import { Sun, Moon, Menu, Bell, Search } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../app/hooks";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   fetchNotifications,
   markNotificationRead,
@@ -42,29 +42,28 @@ function NotificationBell() {
 
   if (!user) return null;
 
-  const handleNavigateForNotification = (n) => {
-    switch (n.entity_type) {
-      case "interview_session":
-        navigate(`/evaluation/${n.entity_id}`);
-        break;
-      case "public_speech":
-        navigate(`/speech/evaluation/${n.entity_id}`);
-        break;
-      case "support_ticket":
-        navigate(`/tickets/${n.entity_id}`);
-        break;
-      case "credit_transaction":
-      case "credit_transfer":
-        navigate("/billing");
-        break;
-      default:
-        navigate("/dashboard");
-    }
-  };
+  // const handleNavigateForNotification = (n) => {
+  //   switch (n.entity_type) {
+  //     case "interview_session":
+  //       navigate(`/evaluation/${n.entity_id}`);
+  //       break;
+  //     case "public_speech":
+  //       navigate(`/speech/evaluation/${n.entity_id}`);
+  //       break;
+  //     case "support_ticket":
+  //       navigate(`/tickets/${n.entity_id}`);
+  //       break;
+  //     case "credit_transaction":
+  //     case "credit_transfer":
+  //       navigate("/billing");
+  //       break;
+  //     default:
+  //       navigate("/dashboard");
+  //   }
+  // };
 
   const handleClickItem = (n) => {
     dispatch(markNotificationRead(n.notification_id));
-    handleNavigateForNotification(n);
     setOpen(false);
   };
 
@@ -216,21 +215,23 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
 
         {/* User chip */}
         {user && (
-          <div className="flex items-center gap-2 pl-2 border-l border-white/10">
-            <img
-              src={imgSrc}
-              alt="Profile"
-              className="w-8 h-8 rounded-full object-cover border border-white/20"
-            />
-            <div className="hidden sm:flex flex-col leading-tight">
-              <span className="text-[10px] text-[var(--color-text-muted)]">
-                Welcome back
-              </span>
-              <span className="text-xs font-semibold text-[var(--color-text-main)]">
-                {user.first_name || "User"}
-              </span>
+          <Link to="/profile">
+            <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+              <img
+                src={imgSrc}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover border border-white/20"
+              />
+              <div className="hidden sm:flex flex-col leading-tight">
+                <span className="text-[10px] text-[var(--color-text-muted)]">
+                  Welcome back
+                </span>
+                <span className="text-xs font-semibold text-[var(--color-text-main)]">
+                  {user.first_name || "User"}
+                </span>
+              </div>
             </div>
-          </div>
+          </Link>
         )}
       </div>
     </header>
