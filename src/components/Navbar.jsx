@@ -4,10 +4,16 @@ import { ThemeContext } from "../context/ThemeContext";
 import { Sun, Moon, Menu, Bell, Search } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../app/hooks";
 import { Link, useNavigate } from "react-router-dom";
+
+import ForDark from "../assets/Logos/newLogo-Dark.png";
+import forLight from "../assets/Logos/newLogo.png";
+
 import {
   fetchNotifications,
   markNotificationRead,
 } from "../features/notifications/notificationsSlice";
+
+/* ------------------- NotificationBell ------------------- */
 
 function NotificationBell() {
   const dispatch = useAppDispatch();
@@ -42,29 +48,10 @@ function NotificationBell() {
 
   if (!user) return null;
 
-  // const handleNavigateForNotification = (n) => {
-  //   switch (n.entity_type) {
-  //     case "interview_session":
-  //       navigate(`/evaluation/${n.entity_id}`);
-  //       break;
-  //     case "public_speech":
-  //       navigate(`/speech/evaluation/${n.entity_id}`);
-  //       break;
-  //     case "support_ticket":
-  //       navigate(`/tickets/${n.entity_id}`);
-  //       break;
-  //     case "credit_transaction":
-  //     case "credit_transfer":
-  //       navigate("/billing");
-  //       break;
-  //     default:
-  //       navigate("/dashboard");
-  //   }
-  // };
-
   const handleClickItem = (n) => {
     dispatch(markNotificationRead(n.notification_id));
     setOpen(false);
+    // later you can route based on n.entity_type here
   };
 
   return (
@@ -139,6 +126,8 @@ function NotificationBell() {
   );
 }
 
+/* ----------------------- Navbar ------------------------ */
+
 export default function Navbar({ collapsed, onToggleSidebar }) {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { user } = useAppSelector((s) => s.user);
@@ -148,18 +137,20 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
     ? `${import.meta.env.VITE_API_IMG_URL}${user.profile_url}`
     : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
+  const logoSrc = theme === "light" ? forLight : ForDark; ;
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    // For now just log or later navigate to /search?q=search
-    // console.log("Search:", search);
+    // later: navigate(`/search?q=${encodeURIComponent(search)}`)
   };
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 md:px-6 shadow-sm z-50 gap-4 transition-colors duration-300"
+      className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 md:px-6 shadow-sm z-50 gap-4 transition-colors duration-300 border-b"
       style={{
         backgroundColor: "var(--color-bg-panel)",
         color: "var(--color-text-main)",
+        borderColor: "var(--color-border)",
       }}
     >
       {/* Left: logo + sidebar toggle */}
@@ -170,9 +161,19 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         >
           <Menu size={20} />
         </button>
-        <h1 className="font-bold text-[var(--color-primary)] text-lg tracking-wide">
-          MockPrep
-        </h1>
+        <Link to="/dashboard" className="flex items-center gap-2">
+          <img
+            src={logoSrc}
+            alt="SelfMock"
+            className="h-8 w-auto object-contain "
+            style={{
+              backgroundColor: "var(--color-bg-panel)",
+            }}
+          />
+          <span className="hidden sm:inline text-sm font-semibold tracking-wide">
+            SelfMock
+          </span>
+        </Link>
       </div>
 
       {/* Center: search bar */}
@@ -180,7 +181,10 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         onSubmit={handleSearchSubmit}
         className="hidden md:flex items-center flex-1 max-w-md mx-4"
       >
-        <div className="flex items-center w-full px-3 py-2 rounded-full border bg-[var(--color-bg-body)]/80 text-sm shadow-inner gap-2">
+        <div
+          className="flex items-center w-full px-3 py-2 rounded-full border bg-[var(--color-bg-body)]/80 text-sm shadow-inner gap-2"
+          style={{ borderColor: "var(--color-border)" }}
+        >
           <Search
             size={16}
             className="text-[var(--color-text-muted)] flex-shrink-0"
@@ -216,7 +220,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         {/* User chip */}
         {user && (
           <Link to="/profile">
-            <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+            <div className="flex items-center gap-2 pl-3 border-l border-white/10">
               <img
                 src={imgSrc}
                 alt="Profile"

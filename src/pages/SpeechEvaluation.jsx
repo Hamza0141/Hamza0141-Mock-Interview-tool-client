@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchSpeechEvaluation } from "../features/speech/speechSlice";
 import { motion } from "framer-motion";
@@ -184,8 +184,6 @@ export default function SpeechEvaluation() {
               >
                 {model.status}
               </span>{" "}
-           
-            
             </p>
           </div>
         </div>
@@ -308,6 +306,15 @@ export default function SpeechEvaluation() {
           )}
         </div>
       </div>
+      <Link to="/feedback">
+        <button
+          type="button"
+          onClick=""
+          className="mt-3 text-xs text-[var(--color-text-muted)] hover:underline"
+        >
+          Give us your feedback
+        </button>
+      </Link>
     </div>
   );
 }

@@ -346,6 +346,15 @@ export default function EvaluationPage() {
             </motion.div>
           );
         })}
+        <Link to="/feedback">
+          <button
+            type="button"
+            onClick=""
+            className="mt-3 text-xs text-[var(--color-text-muted)] hover:underline"
+          >
+            Give us your feedback
+          </button>
+        </Link>
       </div>
 
       {/* ===== FOOTER ===== */}

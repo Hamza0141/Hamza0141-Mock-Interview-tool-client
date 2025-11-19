@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { fetchUserReport } from "../features/report/reportSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Loader2, TrendingUp, BookOpen, Clock, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
@@ -280,6 +280,15 @@ export default function ReportPage() {
           </div>
         )}
       </div>
+      <Link to="/feedback">
+        <button
+          type="button"
+          onClick=""
+          className="mt-3 text-xs text-[var(--color-text-muted)] hover:underline"
+        >
+          Give us your feedback
+        </button>
+      </Link>
     </div>
   );
 }
