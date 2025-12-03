@@ -84,7 +84,7 @@ export default function PublicSpeechSetup() {
           clarity, structure, tone, and more.
         </p>
         <p className="text-xs italic opacity-60 mt-2">
-          SelfMock may make mistakes; verify key information.
+          Prepare With AI may make mistakes; verify key information.
         </p>
       </div>
 
@@ -152,6 +152,7 @@ export default function PublicSpeechSetup() {
             <div className="flex justify-center mt-4">
               <button
                 type="submit"
+                style={{ borderRadius: "0.5rem" }}
                 disabled={status === "loading"}
                 className="flex items-center gap-2 px-6 py-2 rounded-md text-white font-medium transition bg-[var(--color-primary)] hover:opacity-90"
               >

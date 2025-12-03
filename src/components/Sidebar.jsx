@@ -60,18 +60,22 @@ export default function Sidebar({ collapsed }) {
 
   return (
     <aside
-      className={`fixed top-16 left-0 h-[calc(100vh-4rem)] transition-all duration-300 ${
-        collapsed ? "w-20" : "w-64"
-      }`}
+      className="position-fixed"
       style={{
+        top: "4rem", // same as previous top-16 (4rem)
+        left: 0,
+        height: "calc(100vh - 4rem)",
+        width: collapsed ? "5rem" : "16rem", // ~w-20 vs w-64
         backgroundColor: "var(--color-bg-sidebar)",
         borderRight: "1px solid var(--color-border)",
         color: "var(--color-text-main)",
+        transition: "width 0.3s ease",
+        zIndex: 1000,
       }}
     >
-      <div className="flex flex-col h-full justify-between">
+      <div className="d-flex flex-column justify-content-between h-100">
         {/* Nav Items */}
-        <nav className="mt-4 space-y-1 px-2">
+        <nav className="mt-3 px-2">
           {items.map((item) => {
             const isActive = activeId === item.id;
 
@@ -80,27 +84,59 @@ export default function Sidebar({ collapsed }) {
                 key={item.id}
                 to={`/${item.id}`}
                 aria-current={isActive ? "page" : undefined}
-                className={`
-                  relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm
-                  transition-all duration-150
-                  ${
-                    isActive
-                      ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/60 shadow-sm"
-                      : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg-body)] hover:text-[var(--color-primary)]"
+                className="position-relative d-flex align-items-center px-3 py-2 rounded-3 text-decoration-none mb-2 small"
+                style={{
+                  color: isActive
+                    ? "var(--color-primary)"
+                    : "var(--color-text-muted)",
+                  backgroundColor: isActive
+                    ? "rgba(243,146,40,0.15)" // similar to primary/15
+                    : "transparent",
+                  border: isActive
+                    ? "1px solid rgba(243,146,40,0.6)"
+                    : "1px solid transparent",
+                  boxShadow: isActive
+                    ? "0 0.2rem 0.4rem rgba(0,0,0,0.15)"
+                    : "none",
+                  transition: "all 0.15s ease-in-out",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor =
+                      "var(--color-bg-body)";
+                    e.currentTarget.style.color = "var(--color-primary)";
                   }
-                `}
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                    e.currentTarget.style.color = "var(--color-text-muted)";
+                  }
+                }}
               >
                 {/* left active indicator bar */}
                 {isActive && (
-                  <span className="absolute left-0 top-1 bottom-1 w-1 rounded-full bg-[var(--color-primary)]" />
+                  <span
+                    className="position-absolute rounded-pill"
+                    style={{
+                      left: 0,
+                      top: "0.25rem",
+                      bottom: "0.25rem",
+                      width: "0.25rem",
+                      backgroundColor: "var(--color-primary)",
+                    }}
+                  />
                 )}
 
-                <span className="flex items-center justify-center w-5">
+                <span
+                  className="d-flex align-items-center justify-content-center"
+                  style={{ width: "1.25rem" }}
+                >
                   {item.icon}
                 </span>
 
                 {!collapsed && (
-                  <span className="ml-1 truncate">{item.label}</span>
+                  <span className="ms-2 text-truncate">{item.label}</span>
                 )}
               </Link>
             );
@@ -109,16 +145,30 @@ export default function Sidebar({ collapsed }) {
 
         {/* Footer / Logout */}
         <div
-          className="border-t mt-3 p-3"
+          className="border-top mt-3 p-3"
           style={{ borderColor: "var(--color-border)" }}
         >
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-bg-body)] px-3 py-2 rounded-lg transition-all"
+            className="btn w-100 d-flex align-items-center px-3 py-2 rounded-3 border-0 text-start"
+            style={{
+              fontSize: "0.9rem",
+              color: "var(--color-text-muted)",
+              backgroundColor: "transparent",
+              transition: "all 0.15s ease-in-out",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--color-danger)";
+              e.currentTarget.style.backgroundColor = "var(--color-bg-body)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--color-text-muted)";
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
           >
             <LogOut size={18} />
-            {!collapsed && <span>Logout</span>}
+            {!collapsed && <span className="ms-2">Logout</span>}
           </button>
         </div>
       </div>

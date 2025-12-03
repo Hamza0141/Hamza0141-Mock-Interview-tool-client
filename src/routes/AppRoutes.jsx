@@ -2,57 +2,72 @@ import { Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import PrivateRoute from "./PrivateRoute";
 import Loader from "../components/Loader";
-import { useAppDispatch, useAppSelector } from "../app/hooks";
 import DashboardLayout from "../layouts/DashboardLayout";
+import { useAppSelector } from "../app/hooks";
 
+// ========== TEMPLATE PUBLIC SITE ==========
+import RootLayout from "@/layouts/root";
+import TemplateHome from "@/pages/home";
+import About from "@/pages/about";
+import Services from "@/pages/services";
+import Team from "@/pages/team";
+import Faq from "@/pages/faq";
+import PricingTemplate from "@/pages/pricing";
+import NotFound from "@/pages/not-found";
+import CookiesPage from "@/pages/CookiesPage";
+import Contact from "@/pages/contact";
 
-//terms and conditions 
+// ========== YOUR INTERNAL APP PAGES ==========
 const TermsPage = lazy(() => import("../pages/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("../pages/PrivacyPolicyPage"));
 const InterviewPage = lazy(() => import("../pages/Interview"));
-const InterviewSetup = lazy(() =>
-  import("../pages/InterviewSessionSetup")
-);
-
-const PublicSpeechSetup = lazy(() =>
-  import("../pages/PublicSpeechSetup")
-);
+const InterviewSetup = lazy(() => import("../pages/InterviewSessionSetup"));
+const PublicSpeechSetup = lazy(() => import("../pages/PublicSpeechSetup"));
 const PublicSession = lazy(() => import("../pages/PublicSpeechSession"));
 const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
 const FeedbackPage = lazy(() => import("../pages/FeedbackPage"));
-const TicketsPage  = lazy(() => import("../pages/TicketsPage"));
-const TicketDetailPage  = lazy(() => import("../pages/TicketDetailPage"));
+const TicketsPage = lazy(() => import("../pages/TicketsPage"));
+const TicketDetailPage = lazy(() => import("../pages/TicketDetailPage"));
 const InterviewSession = lazy(() => import("../pages/InterviewSession"));
 const EvaluationPage = lazy(() => import("../pages/EvaluationPage"));
-const Home = lazy(() => import("../pages/Home"));
-const Login = lazy(() => import("../pages/Login"));
-const Register = lazy(() => import("../pages/Register"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Notes = lazy(() => import("../pages/Notes"));
 const Report = lazy(() => import("../pages/ReportPage"));
 const SpeechEvaluation = lazy(() => import("../pages/SpeechEvaluation"));
-const BuyCreditsPage = lazy(() => import("../pages/BuyCreditsPage"))
-import ErrorBoundary from "../components/ErrorBoundary";
-import Pricing from "../pages/Pricing";
-
-// const Interviews = lazy(() => import("../pages/Interviews"));
-const NotFound = lazy(() => import("../pages/NotFound"));
+const BuyCreditsPage = lazy(() => import("../pages/BuyCreditsPage"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Register"));
 
 export default function AppRoutes() {
-    const { user, status } = useAppSelector((state) => state.user);
-   const profileId = user?.profile_id;
+  const { user } = useAppSelector((state) => state.user);
+  const profileId = user?.profile_id;
 
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Home />} />
+        {/* ========= TEMPLATE PUBLIC PAGES (Landing Site) ========= */}
+        <Route element={<RootLayout />}>
+          <Route path="/" element={<TemplateHome />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/faq" element={<Faq />} />
+          <Route path="/pricing" element={<PricingTemplate />} />
+          <Route path="/contact" element={<Contact />} />
+
+        {/* ========= AUTH ROUTES ========= */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        {/* =========  LEGAL PAGES ========= */}
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        {/* Private routes with Dashboard layout */}
+          {/* <Route path="/privacy-policy" element={<PrivacyPolicyTemplate />} /> */}
+          <Route path="/cookie-policy" element={<CookiesPage />} />
+        </Route>
+
+
+        {/* ========= DASHBOARD SECTION ========= */}
         <Route
           path="/dashboard"
           element={
@@ -63,16 +78,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        {/* <Route
-          path="/interviews"
-          element={
-            <PrivateRoute>
-              <DashboardLayout>
-                <Interviews />
-              </DashboardLayout>
-            </PrivateRoute>
-          }
-        /> */}
+
         <Route
           path="/profile"
           element={
@@ -83,6 +89,8 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+
+        {/* ========= INTERVIEW & SPEECH ROUTES ========= */}
         <Route
           path="/interview"
           element={
@@ -93,54 +101,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/tickets"
-          element={
-            <PrivateRoute>
-              <ErrorBoundary>
-                <DashboardLayout>
-                  <TicketsPage />
-                </DashboardLayout>
-              </ErrorBoundary>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/tickets/:ticketId"
-          element={
-            <PrivateRoute>
-              <ErrorBoundary>
-                <DashboardLayout>
-                  <TicketDetailPage />
-                </DashboardLayout>
-              </ErrorBoundary>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/reports"
-          element={
-            <PrivateRoute>
-              <ErrorBoundary>
-                <DashboardLayout>
-                  <Report />
-                </DashboardLayout>
-              </ErrorBoundary>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/speech/:speech_id"
-          element={
-            <PrivateRoute>
-              <ErrorBoundary>
-                <DashboardLayout>
-                  <SpeechEvaluation />
-                </DashboardLayout>
-              </ErrorBoundary>
-            </PrivateRoute>
-          }
-        />
+
         <Route
           path="/interview/interviewSetup"
           element={
@@ -151,16 +112,7 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/speech/setup"
-          element={
-            <PrivateRoute>
-              <DashboardLayout>
-                <PublicSpeechSetup />
-              </DashboardLayout>
-            </PrivateRoute>
-          }
-        />
+
         <Route
           path="/interview/session"
           element={
@@ -171,6 +123,18 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/speech/setup"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <PublicSpeechSetup />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+
         <Route
           path="/speech/session"
           element={
@@ -181,6 +145,18 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/speech/:speech_id"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <SpeechEvaluation />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+
         <Route
           path="/evaluation/:session_id"
           element={
@@ -191,16 +167,8 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/pricing"
-          element={
-            <PrivateRoute>
-              <DashboardLayout>
-                <Pricing />
-              </DashboardLayout>
-            </PrivateRoute>
-          }
-        />
+
+        {/* ========= OTHER DASHBOARD ROUTES ========= */}
         <Route
           path="/notifications"
           element={
@@ -211,6 +179,40 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/tickets"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <TicketsPage />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/tickets/:ticketId"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <TicketDetailPage />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/reports"
+          element={
+            <PrivateRoute>
+              <DashboardLayout>
+                <Report />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+
         <Route
           path="/Feedback"
           element={
@@ -232,19 +234,19 @@ export default function AppRoutes() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/notes"
           element={
             <PrivateRoute>
               <DashboardLayout>
-                <ErrorBoundary>
-                  <Notes />
-                </ErrorBoundary>
+                <Notes />
               </DashboardLayout>
             </PrivateRoute>
           }
         />
-        {/* 404 Page */}
+
+        {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

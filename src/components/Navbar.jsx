@@ -55,24 +55,65 @@ function NotificationBell() {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="position-relative" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="relative p-2 rounded-full hover:bg-white/5 transition"
+        className="btn border-0 p-2 rounded-circle position-relative"
+        style={{
+          backgroundColor: "transparent",
+          color: "var(--color-text-main)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "transparent";
+        }}
       >
-        <Bell size={18} className="text-[var(--color-text-main)]" />
+        <Bell size={18} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-[10px] flex items-center justify-center text-white">
+          <span
+            className="position-absolute d-flex align-items-center justify-content-center rounded-pill"
+            style={{
+              top: "-2px",
+              right: "-2px",
+              minWidth: "16px",
+              height: "16px",
+              padding: "0 3px",
+              backgroundColor: "#ef4444",
+              color: "#ffffff",
+              fontSize: "10px",
+            }}
+          >
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 rounded-xl border bg-[var(--color-bg-panel)] shadow-lg z-40 overflow-hidden">
-          <div className="px-3 py-2 border-b border-white/5 flex justify-between items-center">
-            <span className="text-xs font-semibold text-[var(--color-text-main)]">
+        <div
+          className="position-absolute border rounded-3 shadow-lg"
+          style={{
+            right: 0,
+            marginTop: "0.5rem",
+            width: "20rem",
+            backgroundColor: "var(--color-bg-panel)",
+            zIndex: 1040,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            className="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+            style={{ borderColor: "rgba(255,255,255,0.05)" }}
+          >
+            <span
+              className="fw-semibold"
+              style={{
+                fontSize: "12px",
+                color: "var(--color-text-main)",
+              }}
+            >
               Notifications
             </span>
             <button
@@ -81,15 +122,26 @@ function NotificationBell() {
                 setOpen(false);
                 navigate("/notifications");
               }}
-              className="text-[10px] text-[var(--color-primary)] hover:underline"
+              className="btn btn-link p-0"
+              style={{
+                fontSize: "10px",
+                color: "var(--color-primary)",
+                textDecoration: "none",
+              }}
             >
               View all
             </button>
           </div>
 
-          <div className="max-h-72 overflow-y-auto">
+          <div style={{ maxHeight: "18rem", overflowY: "auto" }}>
             {items.length === 0 ? (
-              <p className="text-[11px] text-[var(--color-text-muted)] px-3 py-4 text-center">
+              <p
+                className="text-center mb-0 px-3 py-4"
+                style={{
+                  fontSize: "11px",
+                  color: "var(--color-text-muted)",
+                }}
+              >
                 No notifications yet.
               </p>
             ) : (
@@ -98,22 +150,57 @@ function NotificationBell() {
                   key={n.notification_id}
                   type="button"
                   onClick={() => handleClickItem(n)}
-                  className={`w-full text-left px-3 py-2 text-xs hover:bg-white/5 flex flex-col gap-0.5 ${
-                    n.is_read ? "opacity-70" : "opacity-100"
-                  }`}
+                  className="w-100 text-start border-0 bg-transparent px-3 py-2"
+                  style={{
+                    fontSize: "12px",
+                    opacity: n.is_read ? 0.7 : 1,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      "rgba(255,255,255,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                 >
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="font-medium text-[var(--color-text-main)] truncate">
+                  <div className="d-flex justify-content-between align-items-center gap-2">
+                    <span
+                      className="fw-medium text-truncate"
+                      style={{ color: "var(--color-text-main)" }}
+                    >
                       {n.title}
                     </span>
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-[var(--color-text-muted)]">
+                    <span
+                      className="rounded-pill"
+                      style={{
+                        fontSize: "9px",
+                        padding: "2px 8px",
+                        backgroundColor: "rgba(255,255,255,0.05)",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
                       {n.type}
                     </span>
                   </div>
-                  <span className="text-[10px] text-[var(--color-text-muted)] line-clamp-2">
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      color: "var(--color-text-muted)",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                    }}
+                  >
                     {n.body}
                   </span>
-                  <span className="text-[9px] text-[var(--color-text-muted)]">
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: "9px",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
                     {new Date(n.created_at).toLocaleString()}
                   </span>
                 </button>
@@ -137,7 +224,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
     ? `${import.meta.env.VITE_API_IMG_URL}${user.profile_url}`
     : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-  const logoSrc = theme === "light" ? forLight : ForDark; ;
+  const logoSrc = theme === "light" ? forLight : ForDark;
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -146,32 +233,62 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 md:px-6 shadow-sm z-50 gap-4 transition-colors duration-300 border-b"
+      className="position-fixed d-flex align-items-center justify-content-between shadow-sm"
       style={{
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "4rem",
+        padding: "0 1rem",
+        paddingRight: "1.5rem",
+        zIndex: 1050,
         backgroundColor: "var(--color-bg-panel)",
         color: "var(--color-text-main)",
-        borderColor: "var(--color-border)",
+        borderBottom: "1px solid var(--color-border)",
+        columnGap: "1rem",
       }}
     >
       {/* Left: logo + sidebar toggle */}
-      <div className="flex items-center gap-3">
+      <div className="d-flex align-items-center gap-2">
         <button
+          type="button"
           onClick={onToggleSidebar}
-          className="p-1 rounded-md hover:bg-white/5 md:mr-1"
+          className="btn border-0 p-1 rounded-2 me-1"
+          style={{
+            backgroundColor: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
         >
           <Menu size={20} />
         </button>
-        <Link to="/dashboard" className="flex items-center gap-2">
+        <Link
+          to="/dashboard"
+          className="d-flex align-items-center text-decoration-none"
+        >
           <img
             src={logoSrc}
             alt="SelfMock"
-            className="h-8 w-auto object-contain "
             style={{
+              height: "2rem",
+              width: "auto",
+              objectFit: "contain",
               backgroundColor: "var(--color-bg-panel)",
             }}
           />
-          <span className="hidden sm:inline text-sm font-semibold tracking-wide">
-            SelfMock
+          <span
+            className="d-none d-sm-inline ms-2 fw-semibold"
+            style={{
+              fontSize: "14px",
+              letterSpacing: "0.04em",
+              color: "var(--color-text-main)",
+            }}
+          >
+            Prepare With AI
           </span>
         </Link>
       </div>
@@ -179,36 +296,59 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
       {/* Center: search bar */}
       <form
         onSubmit={handleSearchSubmit}
-        className="hidden md:flex items-center flex-1 max-w-md mx-4"
+        className="d-none d-md-flex flex-grow-1 mx-3"
+        style={{ maxWidth: "28rem" }}
       >
         <div
-          className="flex items-center w-full px-3 py-2 rounded-full border bg-[var(--color-bg-body)]/80 text-sm shadow-inner gap-2"
-          style={{ borderColor: "var(--color-border)" }}
+          className="d-flex align-items-center w-100 rounded-pill border shadow-inner"
+          style={{
+            padding: "0.35rem 0.75rem",
+            backgroundColor: "rgba(15,23,42,0.8)", // similar to bg-body/80 in dark
+            borderColor: "var(--color-border)",
+            columnGap: "0.5rem",
+          }}
         >
           <Search
             size={16}
-            className="text-[var(--color-text-muted)] flex-shrink-0"
+            style={{ color: "var(--color-text-muted)", flexShrink: 0 }}
           />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search interviews, speeches, tickets..."
-            className="w-full bg-transparent outline-none text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)] text-xs"
+            style={{
+              width: "100%",
+              border: "none",
+              outline: "none",
+              backgroundColor: "transparent",
+              color: "var(--color-text-main)",
+              fontSize: "12px",
+            }}
           />
         </div>
       </form>
 
       {/* Right: theme toggle, notifications, user chip */}
-      <div className="flex items-center gap-3">
+      <div className="d-flex align-items-center gap-2">
         {/* Theme toggle */}
         <button
           type="button"
           onClick={toggleTheme}
-          className="p-2 rounded-full transition border border-white/10 hover:border-[var(--color-primary)] hover:shadow-[0_0_10px_rgba(243,146,40,0.4)]"
+          className="btn p-2 rounded-circle border"
           style={{
             backgroundColor: "var(--color-bg-body)",
             color: "var(--color-text-main)",
+            borderColor: "rgba(255,255,255,0.1)",
+            boxShadow: "none",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--color-primary)";
+            e.currentTarget.style.boxShadow = "0 0 10px rgba(243,146,40,0.4)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+            e.currentTarget.style.boxShadow = "none";
           }}
         >
           {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
@@ -219,18 +359,41 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
 
         {/* User chip */}
         {user && (
-          <Link to="/profile">
-            <div className="flex items-center gap-2 pl-3 border-l border-white/10">
+          <Link to="/profile" className="text-decoration-none">
+            <div
+              className="d-flex align-items-center ps-3"
+              style={{
+                borderLeft: "1px solid rgba(255,255,255,0.1)",
+                columnGap: "0.5rem",
+              }}
+            >
               <img
                 src={imgSrc}
                 alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border border-white/20"
+                style={{
+                  width: "2rem",
+                  height: "2rem",
+                  borderRadius: "999px",
+                  objectFit: "cover",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                }}
               />
-              <div className="hidden sm:flex flex-col leading-tight">
-                <span className="text-[10px] text-[var(--color-text-muted)]">
+              <div className="d-none d-sm-flex flex-column">
+                <span
+                  style={{
+                    fontSize: "10px",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
                   Welcome back
                 </span>
-                <span className="text-xs font-semibold text-[var(--color-text-main)]">
+                <span
+                  className="fw-semibold"
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--color-text-main)",
+                  }}
+                >
                   {user.first_name || "User"}
                 </span>
               </div>

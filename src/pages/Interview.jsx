@@ -21,16 +21,16 @@ export default function InterviewPage() {
   const activeUser = user || (storedUser ? JSON.parse(storedUser) : null);
 
   // fetch user once
-useEffect(() => {
-  dispatch(getUserById());
-}, [dispatch]);
+  useEffect(() => {
+    dispatch(getUserById());
+  }, [dispatch]);
 
   // fetch report after user known
-useEffect(() => {
-  if (user?.profile_id) {
-    dispatch(fetchUserReport(user.profile_id));
-  }
-}, [dispatch, user?.profile_id]);
+  useEffect(() => {
+    if (user?.profile_id) {
+      dispatch(fetchUserReport(user.profile_id));
+    }
+  }, [dispatch, user?.profile_id]);
 
   // derive recent with a safe fallback for either shape:
   const recent =
@@ -54,50 +54,53 @@ useEffect(() => {
           : null,
     }));
 
-const speechSessions = recent
-  .filter((it) => it?.type === "speech")
-  .map((it) => {
-    const metrics =
-      it && typeof it.metrics === "object" && it.metrics !== null
-        ? it.metrics
-        : {};
+  const speechSessions = recent
+    .filter((it) => it?.type === "speech")
+    .map((it) => {
+      const metrics =
+        it && typeof it.metrics === "object" && it.metrics !== null
+          ? it.metrics
+          : {};
 
-    // derive feedback text (summary or note)
-    const feedbackText =
-      metrics.summary ??
-      metrics.note ??
-      (typeof it.metrics === "string" ? it.metrics : null) ??
-      "";
+      // derive feedback text (summary or note)
+      const feedbackText =
+        metrics.summary ??
+        metrics.note ??
+        (typeof it.metrics === "string" ? it.metrics : null) ??
+        "";
 
-    // derive status based on available fields
-    const status =
-      it.status === "completed"
-        ? "completed"
-        : it.status === "pending"
-        ? "pending"
-        : metrics.note
-        ? "pending"
-        : metrics.summary
-        ? "completed"
-        : "pending";
+      // derive status based on available fields
+      const status =
+        it.status === "completed"
+          ? "completed"
+          : it.status === "pending"
+          ? "pending"
+          : metrics.note
+          ? "pending"
+          : metrics.summary
+          ? "completed"
+          : "pending";
 
-    return {
-      speech_id: it.id,
-      speech_title: it.title ?? "Untitled speech",
-      feedback: feedbackText, // raw feedback (may be empty if pending)
-      status, // <— HERE is your status value
-      score:
-        typeof it.average_score === "number"
-          ? Math.round(it.average_score)
-          : null,
-      created_at: it.started_at,
-    };
-  });
+      return {
+        speech_id: it.id,
+        speech_title: it.title ?? "Untitled speech",
+        feedback: feedbackText, // raw feedback (may be empty if pending)
+        status,
+        score:
+          typeof it.average_score === "number"
+            ? Math.round(it.average_score)
+            : null,
+        created_at: it.started_at,
+      };
+    });
 
   // Loading / error states
   if (userStatus === "loading" && !activeUser) {
     return (
-      <div className="text-center py-20 text-[var(--color-text-muted)]">
+      <div
+        className="text-center"
+        style={{ padding: "5rem 0", color: "var(--color-text-muted)" }}
+      >
         Loading user information...
       </div>
     );
@@ -105,7 +108,10 @@ const speechSessions = recent
 
   if (!activeUser) {
     return (
-      <div className="text-center py-20 text-red-500">
+      <div
+        className="text-center"
+        style={{ padding: "5rem 0", color: "#ef4444" }}
+      >
         Could not load user data. Please log in again.
       </div>
     );
@@ -113,14 +119,24 @@ const speechSessions = recent
 
   if (reportLoading) {
     return (
-      <div className="text-center py-20 text-[var(--color-text-muted)]">
+      <div
+        className="text-center"
+        style={{ padding: "5rem 0", color: "var(--color-text-muted)" }}
+      >
         Fetching your interviews...
       </div>
     );
   }
 
   if (reportError) {
-    return <div className="text-center py-20 text-red-500">{reportError}</div>;
+    return (
+      <div
+        className="text-center"
+        style={{ padding: "5rem 0", color: "#ef4444" }}
+      >
+        {reportError}
+      </div>
+    );
   }
 
   const requireCreditsAndNavigate = (targetPath) => (e) => {
@@ -139,6 +155,7 @@ const speechSessions = recent
       navigate(targetPath);
     }
   };
+
   // interview button handler
   const handleStartInterview = requireCreditsAndNavigate(
     "/interview/interviewSetup"
@@ -147,20 +164,22 @@ const speechSessions = recent
   const handleStartSpeech = requireCreditsAndNavigate("/speech/setup");
 
   console.log(recent);
+
   return (
-    <div className="min-h-screen">
+    <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
       {/* ===== HEADER ===== */}
-      <section className="relative overflow-hidden mb-10">
+      <section className="mb-4 position-relative overflow-hidden">
         <div
-          className="p-8 rounded-xl shadow-md border flex flex-col md:flex-row justify-between items-center gap-6"
+          className="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4 rounded-3 shadow border p-4 p-md-5"
           style={{
             background:
               "linear-gradient(135deg, var(--color-primary) 30%, #4b6cb7)",
-            color: "#fff",
+            color: "#ffffff",
+            borderColor: "rgba(255,255,255,0.3)",
           }}
         >
           {/* User Info */}
-          <div className="flex items-center gap-4">
+          <div className="d-flex align-items-center gap-3">
             <img
               src={
                 activeUser.profile_url
@@ -170,14 +189,22 @@ const speechSessions = recent
                   : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
               }
               alt="Profile"
-              className="w-20 h-20 rounded-full border-4 border-white/40 object-cover"
+              style={{
+                width: "5rem",
+                height: "5rem",
+                borderRadius: "999px",
+                border: "4px solid rgba(255,255,255,0.4)",
+                objectFit: "cover",
+              }}
             />
             <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Brain size={24} className="text-yellow-300" />
-                Welcome back, {activeUser.first_name} 👋
+              <h1 className="mb-1 d-flex align-items-center gap-2">
+                <Brain size={24} style={{ color: "#fde68a" }} />
+                <span className="fw-bold" style={{ fontSize: "1.5rem" }}>
+                  Welcome back, {activeUser.first_name} 👋
+                </span>
               </h1>
-              <p className="text-sm opacity-90">
+              <p className="mb-0" style={{ fontSize: "0.9rem", opacity: 0.9 }}>
                 Boost your confidence through AI-powered mock interviews and
                 speech practice.
               </p>
@@ -185,129 +212,257 @@ const speechSessions = recent
           </div>
 
           {/* Credit Info */}
-          <div className="text-sm mt-4 md:mt-0 bg-white/10 p-3 rounded-lg shadow-md backdrop-blur-sm">
-            <p>
+          <div
+            className="mt-3 mt-md-0 shadow-sm"
+            style={{
+              fontSize: "0.9rem",
+              backgroundColor: "rgba(255,255,255,0.1)",
+              padding: "0.75rem 1rem",
+              borderRadius: "0.75rem",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            <p className="mb-1">
               💰 Credits:{" "}
-              <span className="font-semibold">
-                {activeUser.credit_balance }
-              </span>
+              <span className="fw-semibold">{activeUser.credit_balance}</span>
             </p>
-              {activeUser?.free_trial == 1 && (
-            <p>
-              🎟️ Free Trial:{" "}
-                <span className="text-green-300 font-semibold">Available</span>
-            </p>
-              ) }
+            {activeUser?.free_trial == 1 && (
+              <p className="mb-0">
+                🎟️ Free Trial:{" "}
+                <span className="fw-semibold" style={{ color: "#bbf7d0" }}>
+                  Available
+                </span>
+              </p>
+            )}
           </div>
         </div>
       </section>
 
       {/* ===== INTERVIEW PRACTICE SECTION ===== */}
-      <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-[var(--color-text-main)] flex items-center gap-2">
-            <Briefcase className="text-[var(--color-primary)]" size={20} />
+      <div className="container" style={{ maxWidth: "72rem" }}>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2
+            className="d-flex align-items-center gap-2 mb-0"
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 600,
+              color: "var(--color-text-main)",
+            }}
+          >
+            <Briefcase size={20} style={{ color: "var(--color-primary)" }} />
             Interview Practice
           </h2>
           <button
+            type="button"
             onClick={handleStartInterview}
-            className="px-4 py-2 rounded-md bg-[var(--color-primary)] text-white font-medium shadow hover:opacity-90 transition"
+            className="btn"
+            style={{
+              padding: "0.4rem 1rem",
+              borderRadius: "0.5rem",
+              backgroundColor: "var(--color-primary)",
+              color: "#ffffff",
+              fontWeight: 500,
+              boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.25)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = 0.9;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = 1;
+            }}
           >
             + Start New Interview
           </button>
         </div>
 
         {sessions.length === 0 ? (
-          <p className="text-[var(--color-text-muted)]">
+          <p
+            style={{
+              color: "var(--color-text-muted)",
+              fontSize: "0.9rem",
+            }}
+          >
             You haven’t started any interviews yet. Click “Start New Interview”
             to begin.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="row g-3 mb-4">
             {sessions.map((s) => (
-              <Link to="/reports">
-                <div
-                  key={s.interview_id}
-                  className="p-5 rounded-xl shadow-md border hover:shadow-lg transition cursor-pointer"
-                  style={{
-                    backgroundColor: "var(--color-bg-panel)",
-                    borderColor: "var(--color-border)",
-                  }}
-                >
-                  <h3 className="font-semibold text-[var(--color-text-main)] mb-1">
-                    {s.job_title}
-                  </h3>
-                  <p className="text-sm text-[var(--color-text-muted)] mb-2">
-                    Difficulty:{" "}
-                    <span className="capitalize">{s.difficulty}</span>
-                  </p>
-                  <p className="text-sm text-[var(--color-text-muted)] mb-2">
-                    Status: <span className="capitalize">{s.status}</span>
-                  </p>
-                  <div className="flex justify-between text-xs opacity-70">
-                    <span>
-                      {s.created_at
-                        ? new Date(s.created_at).toLocaleString()
-                        : "—"}
-                    </span>
-                    <span>Score: {s.score ?? "N/A"}%</span>
+              <div className="col-12 col-sm-6 col-lg-4" key={s.interview_id}>
+                <Link to="/reports" className="text-decoration-none">
+                  <div
+                    className="h-100 rounded-3 shadow border p-4"
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor: "var(--color-bg-panel)",
+                      borderColor: "var(--color-border)",
+                      transition: "box-shadow 0.15s ease-in-out",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow =
+                        "0 0.6rem 1rem rgba(0,0,0,0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow =
+                        "0 0.25rem 0.5rem rgba(0,0,0,0.2)";
+                    }}
+                  >
+                    <h3
+                      className="mb-1 fw-semibold"
+                      style={{ color: "var(--color-text-main)" }}
+                    >
+                      {s.job_title}
+                    </h3>
+                    <p
+                      className="mb-1"
+                      style={{
+                        fontSize: "0.9rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Difficulty:{" "}
+                      <span className="text-capitalize">{s.difficulty}</span>
+                    </p>
+                    <p
+                      className="mb-2"
+                      style={{
+                        fontSize: "0.9rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      Status:{" "}
+                      <span className="text-capitalize">{s.status}</span>
+                    </p>
+                    <div
+                      className="d-flex justify-content-between"
+                      style={{ fontSize: "0.75rem", opacity: 0.7 }}
+                    >
+                      <span>
+                        {s.created_at
+                          ? new Date(s.created_at).toLocaleString()
+                          : "—"}
+                      </span>
+                      <span>Score: {s.score ?? "N/A"}%</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
         )}
       </div>
 
       {/* ===== SPEECH PRACTICE SECTION ===== */}
-      <div className="p-6 max-w-6xl mx-auto mt-12 border-t border-[var(--color-border)]">
-        <h2 className="text-xl font-semibold text-[var(--color-text-main)] flex items-center gap-2 mb-4">
-          <Mic className="text-[var(--color-primary)]" size={20} />
-          Speech Practice
-        </h2>
-        <p className="text-sm text-[var(--color-text-muted)] mb-4 max-w-xl">
-          Practice delivering impactful speeches. Receive detailed AI-based
-          feedback on tone, clarity, and confidence.
-        </p>
+      <div
+        className="mt-4"
+        style={{
+          borderTop: "1px solid var(--color-border)",
+          paddingTop: "2rem",
+        }}
+      >
+        <div className="container" style={{ maxWidth: "72rem" }}>
+          <h2
+            className="d-flex align-items-center gap-2 mb-2"
+            style={{
+              fontSize: "1.25rem",
+              fontWeight: 600,
+              color: "var(--color-text-main)",
+            }}
+          >
+            <Mic size={20} style={{ color: "var(--color-primary)" }} />
+            Speech Practice
+          </h2>
+          <p
+            className="mb-3"
+            style={{
+              fontSize: "0.9rem",
+              color: "var(--color-text-muted)",
+              maxWidth: "32rem",
+            }}
+          >
+            Practice delivering impactful speeches. Receive detailed AI-based
+            feedback on tone, clarity, and confidence.
+          </p>
 
-        <button
-          className="px-4 py-2 rounded-md bg-gradient-to-r from-[var(--color-primary)] to-blue-500 text-white font-medium shadow hover:opacity-90 transition"
-          onClick={handleStartSpeech}
-        >
-          🎙️ Go to Speech Practice
-        </button>
+          <button
+            type="button"
+            className="btn mb-2"
+            onClick={handleStartSpeech}
+            style={{
+              padding: "0.4rem 1rem",
+              borderRadius: "0.5rem",
+              backgroundImage:
+                "linear-gradient(to right, var(--color-primary), #3b82f6)",
+              color: "#ffffff",
+              fontWeight: 500,
+              boxShadow: "0 0.25rem 0.5rem rgba(0,0,0,0.25)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = 0.9;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = 1;
+            }}
+          >
+            🎙️ Go to Speech Practice
+          </button>
 
-        {speechSessions?.length > 0 && (
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {speechSessions?.map((s) => (
-              <Link to="/reports">
-                <div
-                  key={s.speech_id}
-                  className="p-5 rounded-xl shadow-md border hover:shadow-lg transition"
-                  style={{
-                    backgroundColor: "var(--color-bg-panel)",
-                    borderColor: "var(--color-border)",
-                  }}
-                >
-                  <h3 className="font-semibold text-[var(--color-text-main)] mb-1">
-                    {s.speech_title}
-                  </h3>
-                  <p className="text-sm text-[var(--color-text-muted)] mb-2">
-                    Status: {s.status || "AI feedback coming soon"}
-                  </p>
-                  <div className="flex justify-between text-xs opacity-70">
-                    <span>
-                      {s.created_at
-                        ? new Date(s.created_at).toLocaleString()
-                        : "—"}
-                    </span>
-                    <span>Score: {s.score ?? "N/A"}%</span>
-                  </div>
+          {speechSessions?.length > 0 && (
+            <div className="row g-3 mt-3">
+              {speechSessions.map((s) => (
+                <div className="col-12 col-sm-6 col-lg-4" key={s.speech_id}>
+                  <Link to="/reports" className="text-decoration-none">
+                    <div
+                      className="h-100 rounded-3 shadow border p-4"
+                      style={{
+                        backgroundColor: "var(--color-bg-panel)",
+                        borderColor: "var(--color-border)",
+                        transition: "box-shadow 0.15s ease-in-out",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow =
+                          "0 0.6rem 1rem rgba(0,0,0,0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow =
+                          "0 0.25rem 0.5rem rgba(0,0,0,0.2)";
+                      }}
+                    >
+                      <h4
+                        className="mb-1 fw-semibold"
+                        style={{
+                          color: "var(--color-text-main)",
+                        }}
+                      >
+                        {s.speech_title}
+                      </h4>
+                      <p
+                        className="mb-2"
+                        style={{
+                          fontSize: "0.9rem",
+                          color: "var(--color-text-muted)",
+                        }}
+                      >
+                        Status: {s.status || "AI feedback coming soon"}
+                      </p>
+                      <div
+                        className="d-flex justify-content-between"
+                        style={{ fontSize: "0.75rem", opacity: 0.7 }}
+                      >
+                        <span>
+                          {s.created_at
+                            ? new Date(s.created_at).toLocaleString()
+                            : "—"}
+                        </span>
+                        <span>Score: {s.score ?? "N/A"}%</span>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

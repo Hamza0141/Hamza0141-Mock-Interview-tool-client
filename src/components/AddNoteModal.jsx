@@ -124,6 +124,7 @@ export default function AddNoteModal({ onAdd, onClose }) {
               type="submit"
               className="px-6 py-2 rounded-md text-white font-medium transition cursor-pointer"
               style={{
+                borderRadius: "0.5rem",
                 backgroundColor: "var(--color-primary)",
               }}
             >

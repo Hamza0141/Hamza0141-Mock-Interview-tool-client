@@ -133,22 +133,23 @@ export default function Profile() {
     setShareMsg("");
     setShareLoading(false);
   };
+
   const handleCheckUser = async (e) => {
     e.preventDefault();
     setShareMsg("");
     setShareLoading(true);
     try {
-const res = await axiosClient.post("/user/getUserByEmail", {
-  user_email: receiverEmail,
-});
+      const res = await axiosClient.post("/user/getUserByEmail", {
+        user_email: receiverEmail,
+      });
 
-if (res.data?.userinfo) {
-  setReceiverData(res.data.userinfo); // ✅ store the nested object
-  setShareStep(2);
-} else {
-  setShareMsg("❌ No user found with that email.");
-  setShareStep(3);
-}
+      if (res.data?.userinfo) {
+        setReceiverData(res.data.userinfo);
+        setShareStep(2);
+      } else {
+        setShareMsg("❌ No user found with that email.");
+        setShareStep(3);
+      }
     } catch (err) {
       setShareMsg(`❌ ${err.message}`);
       setShareStep(3);
@@ -162,7 +163,6 @@ if (res.data?.userinfo) {
     setShareMsg("");
     setShareLoading(true);
 
-    // validate amount
     const amt = parseInt(amount, 10);
     if (isNaN(amt) || amt <= 0) {
       setShareMsg("❌ Enter a valid amount greater than 0.");
@@ -183,7 +183,6 @@ if (res.data?.userinfo) {
         amount: String(amt),
       });
 
-      // Optimistically update local balance
       const newBalance = Math.max((form.credit_balance ?? 0) - amt, 0);
       const updated = { ...form, credit_balance: newBalance };
       setForm(updated);
@@ -202,14 +201,16 @@ if (res.data?.userinfo) {
     }
   };
 
-
   const imgSrc = form.profile_url
     ? `${import.meta.env.VITE_API_IMG_URL}${form.profile_url}?t=${Date.now()}`
     : "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   if (status === "loading" && !user) {
     return (
-      <div className="text-center py-10 text-[var(--color-text-muted)]">
+      <div
+        className="text-center"
+        style={{ padding: "2.5rem 0", color: "var(--color-text-muted)" }}
+      >
         Loading profile...
       </div>
     );
@@ -217,192 +218,361 @@ if (res.data?.userinfo) {
 
   if (!user) {
     return (
-      <div className="text-center py-10 text-red-500">
+      <div
+        className="text-center"
+        style={{ padding: "2.5rem 0", color: "#ef4444" }}
+      >
         Unable to load user profile.
       </div>
     );
   }
 
+  // status badge styles
+  const statusStyle = isActive
+    ? {
+        backgroundColor: "rgba(34,197,94,0.2)",
+        color: "#4ade80",
+        border: "1px solid rgba(34,197,94,0.3)",
+      }
+    : {
+        backgroundColor: "rgba(239,68,68,0.2)",
+        color: "#fca5a5",
+        border: "1px solid rgba(239,68,68,0.3)",
+      };
+
   return (
     <>
-      <h2 className="text-2xl font-semibold text-[var(--color-text-main)]">
+      <h2
+        className="fw-semibold"
+        style={{
+          fontSize: "1.4rem",
+          marginBottom: "1rem",
+          color: "var(--color-text-main)",
+        }}
+      >
         Profile
       </h2>
 
       <div
-        className="p-8 rounded-xl shadow-md border transition-colors duration-300 max-w-4xl mx-auto"
+        className="mx-auto rounded-4 border shadow-sm"
         style={{
+          maxWidth: "56rem",
+          padding: "2rem",
+          transition: "color 0.2s, background-color 0.2s",
           backgroundColor: "var(--color-bg-panel)",
           borderColor: "var(--color-border)",
           color: "var(--color-text-main)",
         }}
       >
         {/* Header */}
-        <div className="flex flex-col md:flex-row items-center gap-6 mb-8 border-b pb-6">
+        <div
+          className="d-flex flex-column flex-md-row align-items-center gap-3"
+          style={{
+            marginBottom: "2rem",
+            paddingBottom: "1.5rem",
+            borderBottom: "1px solid var(--color-border)",
+          }}
+        >
           <img
             src={imgSrc}
             alt="User Avatar"
-            className="w-28 h-28 rounded-full object-cover border-4"
-            style={{ borderColor: "var(--color-primary)" }}
+            style={{
+              width: "7rem",
+              height: "7rem",
+              borderRadius: "999px",
+              objectFit: "cover",
+              border: "4px solid var(--color-primary)",
+            }}
           />
 
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-3xl font-semibold text-[var(--color-primary)]">
+          <div className="flex-grow-1 text-center text-md-start">
+            <h2
+              className="fw-semibold"
+              style={{
+                fontSize: "1.7rem",
+                color: "var(--color-primary)",
+                marginBottom: "0.25rem",
+              }}
+            >
               {form.first_name} {form.last_name}
             </h2>
-            <p className="text-[var(--color-text-muted)] text-sm mt-1">
+            <p
+              className="mb-1"
+              style={{
+                fontSize: "0.9rem",
+                color: "var(--color-text-muted)",
+              }}
+            >
               {form.profession || "—"}
             </p>
-            <p className="text-[var(--color-text-muted)] mt-2">
+            <p className="mb-2" style={{ color: "var(--color-text-muted)" }}>
               {form.user_email}
             </p>
 
             <button
+              type="button"
               onClick={() => setShowEditModal(true)}
-              className="mt-3 text-xs px-3 py-1 rounded-full font-medium cursor-pointer border"
+              className="btn btn-sm"
               style={{
+                marginTop: "0.25rem",
+                fontSize: "0.7rem",
+                padding: "0.25rem 0.75rem",
+                borderRadius: "999px",
+                fontWeight: 500,
+                border: "1px solid var(--color-primary)",
+                backgroundColor: "transparent",
                 color: "var(--color-primary)",
-                borderColor: "var(--color-primary)",
-                background: "transparent",
               }}
             >
               Edit
             </button>
           </div>
 
-          <div className="flex flex-col items-center md:items-end gap-2">
+          <div className="d-flex flex-column align-items-center align-items-md-end gap-2">
             <span
-              className={`text-xs px-3 py-1 rounded-full font-medium ${
-                isActive
-                  ? "bg-green-500/20 text-green-400 border border-green-400/30"
-                  : "bg-red-500/20 text-red-400 border border-red-400/30"
-              }`}
+              className="badge rounded-pill"
+              style={{
+                fontSize: "0.7rem",
+                padding: "0.25rem 0.75rem",
+                fontWeight: 500,
+                ...statusStyle,
+              }}
             >
               {isActive ? "Active" : "Inactive"}
             </span>
           </div>
         </div>
 
-        {/* Details Grid (original design) */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div
-            className="p-4 rounded-lg shadow-sm border"
-            style={{ borderColor: "var(--color-border)" }}
-          >
-            <h4 className="text-sm font-semibold text-[var(--color-primary)] mb-2 uppercase tracking-wide">
-              Account Details
-            </h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <strong>Joined:</strong>{" "}
-                {form.created_at
-                  ? new Date(form.created_at).toLocaleDateString()
-                  : "—"}
-              </li>
-              <li>
-                <strong>Credit Balance:</strong>{" "}
-                <span className="text-[var(--color-primary)] font-semibold">
-                  {form.credit_balance ?? 0} Credits
-                </span>
-              </li>
-              {form?.free_trial == 1 && (
-                <li>
-                  <strong>Free Trial:</strong>{" "}
-                  {form.free_trial ? "Active" : "Used"}
+        {/* Details Grid */}
+        <div className="row g-3">
+          <div className="col-12 col-md-6">
+            <div
+              className="rounded-3 border shadow-sm"
+              style={{
+                padding: "1rem",
+                borderColor: "var(--color-border)",
+              }}
+            >
+              <h4
+                className="fw-semibold mb-2 text-uppercase"
+                style={{
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.08em",
+                  color: "var(--color-primary)",
+                }}
+              >
+                Account Details
+              </h4>
+              <ul
+                className="mb-0"
+                style={{
+                  listStyle: "none",
+                  paddingLeft: 0,
+                  fontSize: "0.9rem",
+                }}
+              >
+                <li className="mb-1">
+                  <strong>Joined:</strong>{" "}
+                  {form.created_at
+                    ? new Date(form.created_at).toLocaleDateString()
+                    : "—"}
                 </li>
-              )}
-            </ul>
+                <li className="mb-1">
+                  <strong>Credit Balance:</strong>{" "}
+                  <span
+                    className="fw-semibold"
+                    style={{ color: "var(--color-primary)" }}
+                  >
+                    {form.credit_balance ?? 0} Credits
+                  </span>
+                </li>
+                {form?.free_trial == 1 && (
+                  <li className="mb-1">
+                    <strong>Free Trial:</strong>{" "}
+                    {form.free_trial ? "Active" : "Used"}
+                  </li>
+                )}
+              </ul>
+            </div>
           </div>
 
-          <div
-            className="p-4 rounded-lg shadow-sm border"
-            style={{ borderColor: "var(--color-border)" }}
-          >
-            <h4 className="text-sm font-semibold text-[var(--color-primary)] mb-2 uppercase tracking-wide">
-              Recent Activity
-            </h4>
-            <ul className="text-sm space-y-2">
-              <li>🗓️ Joined “Mock Interview Practice” challenge</li>
-              <li>💬 Completed a Technical Interview round</li>
-              <li>⭐ Earned 25 new credits from community answers</li>
-            </ul>
+          <div className="col-12 col-md-6">
+            <div
+              className="rounded-3 border shadow-sm"
+              style={{
+                padding: "1rem",
+                borderColor: "var(--color-border)",
+              }}
+            >
+              <h4
+                className="fw-semibold mb-2 text-uppercase"
+                style={{
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.08em",
+                  color: "var(--color-primary)",
+                }}
+              >
+                Recent Activity
+              </h4>
+              <ul
+                className="mb-0"
+                style={{
+                  listStyle: "none",
+                  paddingLeft: 0,
+                  fontSize: "0.9rem",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                <li>🗓️ Joined “Mock Interview Practice” challenge</li>
+                <li>💬 Completed a Technical Interview round</li>
+                <li>⭐ Earned 25 new credits from community answers</li>
+              </ul>
+            </div>
           </div>
         </div>
 
         {/* Additional Options */}
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="row g-3 mt-4">
           {/* Share My Credit */}
-          <div
-            className="p-5 rounded-lg border shadow-sm transition-all duration-300 hover:shadow-md hover:border-[var(--color-primary)]"
-            style={{
-              borderColor: "var(--color-border)",
-              backgroundColor: "var(--color-bg-panel)",
-              color: "var(--color-text-main)",
-            }}
-          >
-            <h4 className="text-sm font-semibold text-[var(--color-primary)] mb-3 uppercase tracking-wide flex items-center gap-2">
-              💰 Share My Credit
-            </h4>
-
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">
-              You currently have{" "}
-              <span className="text-[var(--color-primary)] font-semibold">
-                {form.credit_balance ?? 0}
-              </span>{" "}
-              credits. Share credits with a friend.
-            </p>
-
-            <button
-              onClick={() => setShowShareModal(true)}
-              className="px-5 py-2 rounded-md text-white text-sm font-medium transition hover:opacity-90"
-              style={{ backgroundColor: "var(--color-primary)" }}
+          <div className="col-12 col-md-6">
+            <div
+              className="rounded-3 border shadow-sm h-100"
+              style={{
+                padding: "1.25rem",
+                borderColor: "var(--color-border)",
+                backgroundColor: "var(--color-bg-panel)",
+                color: "var(--color-text-main)",
+              }}
             >
-              Share My Credit
-            </button>
+              <h4
+                className="fw-semibold mb-3 text-uppercase d-flex align-items-center"
+                style={{
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.08em",
+                  color: "var(--color-primary)",
+                }}
+              >
+                💰 Share My Credit
+              </h4>
+
+              <p
+                className="mb-3"
+                style={{
+                  fontSize: "0.9rem",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                You currently have{" "}
+                <span
+                  className="fw-semibold"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  {form.credit_balance ?? 0}
+                </span>{" "}
+                credits. Share credits with a friend.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowShareModal(true)}
+                className="btn"
+                style={{
+                  fontSize: "0.85rem",
+                  padding: "0.45rem 1.25rem",
+                  borderRadius: "0.5rem",
+                  fontWeight: 500,
+                  color: "#fff",
+                  backgroundColor: "var(--color-primary)",
+                }}
+              >
+                Share My Credit
+              </button>
+            </div>
           </div>
 
           {/* Change Password CTA */}
-          <div
-            className="p-5 rounded-lg border shadow-sm transition-all duration-300 hover:shadow-md hover:border-[var(--color-primary)]"
-            style={{
-              borderColor: "var(--color-border)",
-              backgroundColor: "var(--color-bg-panel)",
-              color: "var(--color-text-main)",
-            }}
-          >
-            <h4 className="text-sm font-semibold text-[var(--color-primary)] mb-3 uppercase tracking-wide flex items-center gap-2">
-              🔒 Security Settings
-            </h4>
-
-            <p className="text-sm text-[var(--color-text-muted)] mb-4">
-              Keep your account secure by changing your password regularly.
-            </p>
-
-            <button
-              onClick={() => setShowPasswordModal(true)}
-              className="px-5 py-2 text-sm rounded-md font-medium transition hover:text-white hover:shadow-md cursor-pointer"
-              style={{ backgroundColor: "var(--color-primary)", color: "#fff" }}
+          <div className="col-12 col-md-6">
+            <div
+              className="rounded-3 border shadow-sm h-100"
+              style={{
+                padding: "1.25rem",
+                borderColor: "var(--color-border)",
+                backgroundColor: "var(--color-bg-panel)",
+                color: "var(--color-text-main)",
+              }}
             >
-              Change Password
-            </button>
+              <h4
+                className="fw-semibold mb-3 text-uppercase d-flex align-items-center"
+                style={{
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.08em",
+                  color: "var(--color-primary)",
+                }}
+              >
+                🔒 Security Settings
+              </h4>
 
-            <div className="mt-4 text-xs text-[var(--color-text-muted)]">
-              <p>💡 Tip: Use letters, numbers, and special symbols.</p>
+              <p
+                className="mb-3"
+                style={{
+                  fontSize: "0.9rem",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                Keep your account secure by changing your password regularly.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowPasswordModal(true)}
+                className="btn"
+                style={{
+                  fontSize: "0.85rem",
+                  padding: "0.45rem 1.25rem",
+                  borderRadius: "0.5rem",
+                  fontWeight: 500,
+                  color: "#fff",
+                  backgroundColor: "var(--color-primary)",
+                }}
+              >
+                Change Password
+              </button>
+
+              <div
+                className="mt-3"
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                <p className="mb-0">
+                  💡 Tip: Use letters, numbers, and special symbols.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-sm text-center text-[var(--color-text-muted)] border-t pt-4">
-          <p>
+        <div
+          className="text-center"
+          style={{
+            marginTop: "2rem",
+            paddingTop: "1rem",
+            borderTop: "1px solid var(--color-border)",
+            fontSize: "0.85rem",
+            color: "var(--color-text-muted)",
+          }}
+        >
+          <p className="mb-0">
             Member since{" "}
-            <span className="text-[var(--color-primary)]">
+            <span style={{ color: "var(--color-primary)" }}>
               {form.created_at
                 ? new Date(form.created_at).toLocaleDateString()
                 : "Unknown"}
             </span>{" "}
             |{" "}
-            <span className="opacity-70">
+            <span style={{ opacity: 0.7 }}>
               Last updated:{" "}
               {form.updated_at
                 ? new Date(form.updated_at).toLocaleDateString()
@@ -415,74 +585,116 @@ if (res.data?.userinfo) {
 
         {/* Edit Profile Modal */}
         {showEditModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 backdrop-blur-sm">
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            style={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+              zIndex: 1050,
+              backdropFilter: "blur(4px)",
+            }}
+          >
             <div
-              className="rounded-xl shadow-xl p-8 w-full max-w-md relative border transition-all duration-300"
+              className="position-relative rounded-4 border shadow-lg"
               style={{
+                width: "100%",
+                maxWidth: "28rem",
+                padding: "2rem",
                 backgroundColor: "var(--color-bg-panel)",
                 borderColor: "var(--color-border)",
                 color: "var(--color-text-main)",
               }}
             >
               <button
-                className="absolute top-3 right-3 text-[var(--color-text-muted)] hover:text-red-500"
+                type="button"
+                className="btn-close"
+                aria-label="Close"
                 onClick={() => setShowEditModal(false)}
-              >
-                ✕
-              </button>
+                style={{
+                  position: "absolute",
+                  top: "0.75rem",
+                  right: "0.75rem",
+                  filter: "invert(1)",
+                }}
+              />
 
-              <h3 className="text-xl font-semibold text-center text-[var(--color-primary)] mb-6">
+              <h3
+                className="text-center fw-semibold mb-4"
+                style={{
+                  fontSize: "1.25rem",
+                  color: "var(--color-primary)",
+                }}
+              >
                 Edit Profile
               </h3>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                  type="text"
-                  name="first_name"
-                  value={form.first_name || ""}
-                  onChange={handleChange}
-                  placeholder="First Name"
-                  className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-main)",
-                  }}
-                />
-                <input
-                  type="text"
-                  name="last_name"
-                  value={form.last_name || ""}
-                  onChange={handleChange}
-                  placeholder="Last Name"
-                  className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-main)",
-                  }}
-                />
-                <input
-                  type="text"
-                  name="profession"
-                  value={form.profession || ""}
-                  onChange={handleChange}
-                  placeholder="Profession"
-                  className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-main)",
-                  }}
-                />
+              <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={form.first_name || ""}
+                    onChange={handleChange}
+                    placeholder="First Name"
+                    className="form-control"
+                    style={{
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={form.last_name || ""}
+                    onChange={handleChange}
+                    placeholder="Last Name"
+                    className="form-control"
+                    style={{
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="profession"
+                    value={form.profession || ""}
+                    onChange={handleChange}
+                    placeholder="Profession"
+                    className="form-control"
+                    style={{
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                  />
+                </div>
 
-                <div>
-                  <label className="block text-sm mb-1 text-[var(--color-text-muted)]">
+                <div className="mb-3">
+                  <label
+                    className="form-label mb-1"
+                    style={{
+                      fontSize: "0.8rem",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
                     Profile Image
                   </label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="w-full border rounded-md px-3 py-2 text-sm bg-transparent"
+                    className="form-control"
                     style={{
+                      fontSize: "0.85rem",
+                      backgroundColor: "transparent",
                       borderColor: "var(--color-border)",
                       color: "var(--color-text-main)",
                     }}
@@ -491,22 +703,31 @@ if (res.data?.userinfo) {
 
                 {feedback && (
                   <p
-                    className={`text-sm text-center p-2 rounded-md ${
-                      feedback.startsWith("✅")
-                        ? "text-green-500 bg-green-100/10"
-                        : "text-red-500 bg-red-100/10"
-                    }`}
+                    className="text-center rounded-3 mb-3"
+                    style={{
+                      fontSize: "0.85rem",
+                      padding: "0.4rem 0.6rem",
+                      color: feedback.startsWith("✅") ? "#4ade80" : "#f87171",
+                      backgroundColor: feedback.startsWith("✅")
+                        ? "rgba(34,197,94,0.08)"
+                        : "rgba(248,113,113,0.08)",
+                    }}
                   >
                     {feedback}
                   </p>
                 )}
 
-                <div className="flex justify-center">
+                <div className="d-flex justify-content-center">
                   <button
                     type="submit"
                     disabled={status === "loading"}
-                    className="px-6 py-2 rounded-md text-white font-medium transition"
+                    className="btn"
                     style={{
+                      padding: "0.4rem 1.5rem",
+                      borderRadius: "0.5rem",
+                      color: "#fff",
+                      fontWeight: 500,
+                      fontSize: "0.9rem",
                       backgroundColor: "var(--color-primary)",
                       opacity: status === "loading" ? 0.7 : 1,
                     }}
@@ -521,93 +742,140 @@ if (res.data?.userinfo) {
 
         {/* Password Change Modal */}
         {showPasswordModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 backdrop-blur-sm">
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            style={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+              zIndex: 1050,
+              backdropFilter: "blur(4px)",
+            }}
+          >
             <div
-              className="rounded-xl shadow-xl p-8 w-full max-w-md relative border transition-all duration-300"
+              className="position-relative rounded-4 border shadow-lg"
               style={{
+                width: "100%",
+                maxWidth: "28rem",
+                padding: "2rem",
                 backgroundColor: "var(--color-bg-panel)",
                 borderColor: "var(--color-border)",
                 color: "var(--color-text-main)",
               }}
             >
               <button
-                className="absolute top-3 right-3 text-[var(--color-text-muted)] hover:text-red-500"
+                type="button"
+                className="btn-close"
+                aria-label="Close"
                 onClick={() => setShowPasswordModal(false)}
-              >
-                ✕
-              </button>
+                style={{
+                  position: "absolute",
+                  top: "0.75rem",
+                  right: "0.75rem",
+                  filter: "invert(1)",
+                }}
+              />
 
-              <h3 className="text-xl font-semibold text-center text-[var(--color-primary)] mb-6">
+              <h3
+                className="text-center fw-semibold mb-4"
+                style={{
+                  fontSize: "1.25rem",
+                  color: "var(--color-primary)",
+                }}
+              >
                 Change Password
               </h3>
 
-              <form onSubmit={handlePasswordChange} className="space-y-4">
-                <input
-                  type="password"
-                  placeholder="Current Password"
-                  value={passwordForm.currentPassword}
-                  onChange={(e) =>
-                    setPasswordForm({
-                      ...passwordForm,
-                      currentPassword: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-main)",
-                  }}
-                />
-                <input
-                  type="password"
-                  placeholder="New Password"
-                  value={passwordForm.newPassword}
-                  onChange={(e) =>
-                    setPasswordForm({
-                      ...passwordForm,
-                      newPassword: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-main)",
-                  }}
-                />
-                <input
-                  type="password"
-                  placeholder="Confirm New Password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordForm({
-                      ...passwordForm,
-                      confirmPassword: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-main)",
-                  }}
-                />
+              <form onSubmit={handlePasswordChange}>
+                <div className="mb-3">
+                  <input
+                    type="password"
+                    placeholder="Current Password"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        currentPassword: e.target.value,
+                      })
+                    }
+                    className="form-control"
+                    style={{
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="password"
+                    placeholder="New Password"
+                    value={passwordForm.newPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    className="form-control"
+                    style={{
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="password"
+                    placeholder="Confirm New Password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    className="form-control"
+                    style={{
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                  />
+                </div>
 
                 {passwordMsg && (
                   <p
-                    className={`text-sm text-center p-2 rounded-md ${
-                      passwordMsg.startsWith("✅")
-                        ? "text-green-500 bg-green-100/10"
-                        : "text-red-500 bg-red-100/10"
-                    }`}
+                    className="text-center rounded-3 mb-3"
+                    style={{
+                      fontSize: "0.85rem",
+                      padding: "0.4rem 0.6rem",
+                      color: passwordMsg.startsWith("✅")
+                        ? "#4ade80"
+                        : "#f87171",
+                      backgroundColor: passwordMsg.startsWith("✅")
+                        ? "rgba(34,197,94,0.08)"
+                        : "rgba(248,113,113,0.08)",
+                    }}
                   >
                     {passwordMsg}
                   </p>
                 )}
 
-                <div className="flex justify-center">
+                <div className="d-flex justify-content-center">
                   <button
                     type="submit"
-                    className="px-6 py-2 rounded-md text-white font-medium transition"
-                    style={{ backgroundColor: "var(--color-primary)" }}
+                    className="btn"
+                    style={{
+                      padding: "0.4rem 1.5rem",
+                      borderRadius: "0.5rem",
+                      color: "#fff",
+                      fontWeight: 500,
+                      fontSize: "0.9rem",
+                      backgroundColor: "var(--color-primary)",
+                    }}
                   >
                     Change Password
                   </button>
@@ -619,49 +887,89 @@ if (res.data?.userinfo) {
 
         {/* Share Credit Modal */}
         {showShareModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 backdrop-blur-sm">
+          <div
+            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            style={{
+              backgroundColor: "rgba(0,0,0,0.5)",
+              zIndex: 1050,
+              backdropFilter: "blur(4px)",
+            }}
+          >
             <div
-              className="rounded-xl shadow-xl p-8 w-full max-w-md relative border transition-all duration-300"
+              className="position-relative rounded-4 border shadow-lg"
               style={{
+                width: "100%",
+                maxWidth: "28rem",
+                padding: "2rem",
                 backgroundColor: "var(--color-bg-panel)",
                 borderColor: "var(--color-border)",
                 color: "var(--color-text-main)",
               }}
             >
               <button
+                type="button"
                 onClick={resetShareState}
-                className="absolute top-3 right-3 text-[var(--color-text-muted)] hover:text-red-500 transition"
-              >
-                ✕
-              </button>
+                className="btn-close"
+                aria-label="Close"
+                style={{
+                  position: "absolute",
+                  top: "0.75rem",
+                  right: "0.75rem",
+                  filter: "invert(1)",
+                }}
+              />
 
-              <h3 className="text-xl font-semibold text-center text-[var(--color-primary)] mb-6">
+              <h3
+                className="text-center fw-semibold mb-4"
+                style={{
+                  fontSize: "1.25rem",
+                  color: "var(--color-primary)",
+                }}
+              >
                 Share Credits
               </h3>
 
               {/* Step 1: Email */}
               {shareStep === 1 && (
-                <form onSubmit={handleCheckUser} className="space-y-4">
-                  <p className="text-sm text-[var(--color-text-muted)] text-center mb-2">
-                    Enter the recipient's email to verify.
-                  </p>
-                  <input
-                    type="email"
-                    value={receiverEmail}
-                    onChange={(e) => setReceiverEmail(e.target.value)}
-                    placeholder="Receiver email"
-                    required
-                    className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                <form onSubmit={handleCheckUser}>
+                  <p
+                    className="text-center mb-3"
                     style={{
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
+                      fontSize: "0.85rem",
+                      color: "var(--color-text-muted)",
                     }}
-                  />
+                  >
+                    Enter the recipient&apos;s email to verify.
+                  </p>
+                  <div className="mb-3">
+                    <input
+                      type="email"
+                      value={receiverEmail}
+                      onChange={(e) => setReceiverEmail(e.target.value)}
+                      placeholder="Receiver email"
+                      required
+                      className="form-control"
+                      style={{
+                        fontSize: "0.9rem",
+                        backgroundColor: "transparent",
+                        borderColor: "var(--color-border)",
+                        color: "var(--color-text-main)",
+                      }}
+                    />
+                  </div>
                   <button
                     type="submit"
                     disabled={shareLoading}
-                    className="w-full py-2 rounded-md text-white font-medium transition"
-                    style={{ backgroundColor: "var(--color-primary)" }}
+                    className="btn w-100"
+                    style={{
+                      padding: "0.45rem 1.25rem",
+                      borderRadius: "0.5rem",
+                      color: "#fff",
+                      fontWeight: 500,
+                      fontSize: "0.9rem",
+                      backgroundColor: "var(--color-primary)",
+                      opacity: shareLoading ? 0.8 : 1,
+                    }}
                   >
                     {shareLoading ? "Checking..." : "Next"}
                   </button>
@@ -670,43 +978,65 @@ if (res.data?.userinfo) {
 
               {/* Step 2: Amount */}
               {shareStep === 2 && receiverData && (
-                <form onSubmit={handleTransferCredit} className="space-y-4">
-                  <p className="text-sm text-[var(--color-text-muted)] text-center mb-2">
+                <form onSubmit={handleTransferCredit}>
+                  <p
+                    className="text-center mb-3"
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
                     Sending credit to{" "}
-                    <strong className="text-[var(--color-primary)]">
+                    <strong style={{ color: "var(--color-primary)" }}>
                       {receiverData.user_email}
                     </strong>
                   </p>
 
-                  <input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="Amount to send"
-                    required
-                    min="1"
-                    className="w-full px-4 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
-                    style={{
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
+                  <div className="mb-3">
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="Amount to send"
+                      required
+                      min="1"
+                      className="form-control"
+                      style={{
+                        fontSize: "0.9rem",
+                        backgroundColor: "transparent",
+                        borderColor: "var(--color-border)",
+                        color: "var(--color-text-main)",
+                      }}
+                    />
+                  </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="d-flex flex-column flex-sm-row gap-2">
                     <button
                       type="submit"
                       disabled={shareLoading}
-                      className="flex-1 py-2 rounded-md text-white font-medium transition"
-                      style={{ backgroundColor: "var(--color-primary)" }}
+                      className="btn flex-grow-1"
+                      style={{
+                        padding: "0.45rem 1.25rem",
+                        borderRadius: "0.5rem",
+                        color: "#fff",
+                        fontWeight: 500,
+                        fontSize: "0.9rem",
+                        backgroundColor: "var(--color-primary)",
+                        opacity: shareLoading ? 0.8 : 1,
+                      }}
                     >
                       {shareLoading ? "Sending..." : "Send Credit"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShareStep(1)}
-                      className="flex-1 py-2 rounded-md border text-sm hover:bg-[var(--color-border)] transition"
+                      className="btn flex-grow-1"
                       style={{
-                        borderColor: "var(--color-border)",
+                        padding: "0.45rem 1.25rem",
+                        borderRadius: "0.5rem",
+                        fontSize: "0.8rem",
+                        backgroundColor: "transparent",
+                        border: "1px solid var(--color-border)",
                         color: "var(--color-text-muted)",
                       }}
                     >
@@ -718,20 +1048,32 @@ if (res.data?.userinfo) {
 
               {/* Step 3: Result */}
               {shareStep === 3 && (
-                <div className="text-center space-y-4">
+                <div className="text-center">
                   <p
-                    className={`p-3 rounded-md ${
-                      shareMsg.startsWith("✅")
-                        ? "text-green-500 bg-green-100/10"
-                        : "text-red-500 bg-red-100/10"
-                    }`}
+                    className="rounded-3 mb-3"
+                    style={{
+                      fontSize: "0.85rem",
+                      padding: "0.6rem 0.8rem",
+                      color: shareMsg.startsWith("✅") ? "#4ade80" : "#f87171",
+                      backgroundColor: shareMsg.startsWith("✅")
+                        ? "rgba(34,197,94,0.08)"
+                        : "rgba(248,113,113,0.08)",
+                    }}
                   >
                     {shareMsg}
                   </p>
                   <button
+                    type="button"
                     onClick={resetShareState}
-                    className="px-6 py-2 rounded-md text-white font-medium transition"
-                    style={{ backgroundColor: "var(--color-primary)" }}
+                    className="btn"
+                    style={{
+                      padding: "0.45rem 1.5rem",
+                      borderRadius: "0.5rem",
+                      color: "#fff",
+                      fontWeight: 500,
+                      fontSize: "0.9rem",
+                      backgroundColor: "var(--color-primary)",
+                    }}
                   >
                     Done
                   </button>

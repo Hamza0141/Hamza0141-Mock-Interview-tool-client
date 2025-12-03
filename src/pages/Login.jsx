@@ -15,12 +15,11 @@ export default function Login() {
   const [form, setForm] = useState({ user_email: "", user_password: "" });
   const [feedback, setFeedback] = useState({ type: "", text: "" });
 
-  // extra UI modes: "login" | "verifyEmail" | "resetPassword"
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState("login"); // "login" | "verifyEmail" | "resetPassword"
 
   // email verification flow
   const [verifyOtp, setVerifyOtp] = useState("");
-  const [verifyStatus, setVerifyStatus] = useState("idle"); // idle | loading
+  const [verifyStatus, setVerifyStatus] = useState("idle");
   const [verifyMsg, setVerifyMsg] = useState("");
   const [canResendVerify, setCanResendVerify] = useState(true);
 
@@ -31,10 +30,9 @@ export default function Login() {
   const [resetPassword2, setResetPassword2] = useState("");
   const [resetStatus, setResetStatus] = useState("idle");
   const [resetMsg, setResetMsg] = useState("");
-  const [resetStep, setResetStep] = useState(1); // 1 = send code, 2 = enter otp & new pwd
+  const [resetStep, setResetStep] = useState(1);
   const [canResendReset, setCanResendReset] = useState(true);
 
-  // ✅ Redirect immediately when authenticated
   useEffect(() => {
     if (isAuthenticated) {
       setFeedback({
@@ -47,7 +45,6 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate]);
 
-  // ✅ Display backend error dynamically + detect "verify your account"
   useEffect(() => {
     if (error && status === "failed") {
       setFeedback({
@@ -88,7 +85,7 @@ export default function Login() {
     }
   };
 
-  // ===== Email activation helpers =====
+  // ---- Email activation helpers ----
   const handleSendActivationOtp = async () => {
     setVerifyMsg("");
     if (!form.user_email) {
@@ -107,7 +104,6 @@ export default function Login() {
       });
 
       setVerifyMsg(res.data?.message || "✅ Verification code sent.");
-      // simple cooldown
       setTimeout(() => setCanResendVerify(true), 30000);
     } catch (err) {
       setVerifyMsg(
@@ -142,7 +138,6 @@ export default function Login() {
       );
       setVerifyOtp("");
 
-      // After short delay, go back to login mode
       setTimeout(() => {
         setMode("login");
         setFeedback({
@@ -162,7 +157,7 @@ export default function Login() {
     }
   };
 
-  // ===== Password reset helpers =====
+  // ---- Password reset helpers ----
   const startResetFlow = () => {
     setMode("resetPassword");
     setResetMsg("");
@@ -189,7 +184,6 @@ export default function Login() {
 
       setResetMsg(res.data?.message || "✅ Reset code sent to your email.");
       setResetStep(2);
-
       setTimeout(() => setCanResendReset(true), 30000);
     } catch (err) {
       setResetMsg(
@@ -219,7 +213,6 @@ export default function Login() {
     try {
       setResetStatus("loading");
 
-      // Body shape can be adjusted to match your backend
       const res = await axiosClient.post("/user/reset-password", {
         user_email: resetEmail,
         otp: resetOtp.trim(),
@@ -229,7 +222,6 @@ export default function Login() {
 
       setResetMsg(res.data?.message || "✅ Password reset successfully.");
 
-      // After success, go back to login
       setTimeout(() => {
         setMode("login");
         setFeedback({
@@ -249,9 +241,11 @@ export default function Login() {
     }
   };
 
-  // ===== Render =====
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-body)] transition-colors duration-300">
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ backgroundColor: "#05051E" }} // 🔹 fixed dark background
+    >
       <div
         className="w-full max-w-md p-8 rounded-xl shadow-md border"
         style={{
@@ -270,92 +264,103 @@ export default function Login() {
 
         {/* ==== LOGIN FORM ==== */}
         {mode === "login" && (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm mb-1 text-[var(--color-text-main)]">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="user_email"
-                required
-                value={form.user_email}
-                onChange={handleChange}
-                className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                style={{
-                  backgroundColor: "var(--color-bg-body)",
-                  borderColor: "var(--color-border)",
-                  color: "var(--color-text-main)",
-                }}
-              />
-            </div>
+          <>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm mb-1 text-[var(--color-text-main)]">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="user_email"
+                  required
+                  value={form.user_email}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    backgroundColor: "var(--color-bg-body)",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                  }}
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm mb-1 text-[var(--color-text-main)]">
-                Password
-              </label>
-              <input
-                type="password"
-                name="user_password"
-                required
-                value={form.user_password}
-                onChange={handleChange}
-                className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                style={{
-                  backgroundColor: "var(--color-bg-body)",
-                  borderColor: "var(--color-border)",
-                  color: "var(--color-text-main)",
-                }}
-              />
-              <button
-                type="button"
-                onClick={startResetFlow}
-                className="mt-1 text-xs text-[var(--color-secondary)] hover:underline"
-              >
-                Forgot password?
-              </button>
-            </div>
+              <div>
+                <label className="block text-sm mb-1 text-[var(--color-text-main)]">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  name="user_password"
+                  required
+                  value={form.user_password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    backgroundColor: "var(--color-bg-body)",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={startResetFlow}
+                  className="mt-1 text-xs text-[var(--color-secondary)] hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
 
-            {feedback.text && (
-              <p
-                className={`text-sm mt-2 p-2 rounded-md text-center ${
-                  feedback.type === "error"
-                    ? "text-red-500 bg-red-100/10"
-                    : "text-green-500 bg-green-100/10"
-                }`}
-              >
-                {feedback.text}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              className="w-full py-2 font-medium rounded-md transition"
-              style={{
-                backgroundColor: "var(--color-primary)",
-                color: "#fff",
-                opacity: status === "loading" ? 0.7 : 1,
-              }}
-            >
-              {status === "loading" ? "Signing in..." : "Login"}
-            </button>
-
-            {/* Show "verify your email" hint if message suggests it */}
-            {feedback.type === "error" &&
-              feedback.text.toLowerCase().includes("verify") && (
-                <div className="mt-3 text-center text-xs text-[var(--color-text-muted)]">
-                  Your account isn&apos;t verified.{" "}
-                  <button
-                    type="button"
-                    onClick={() => setMode("verifyEmail")}
-                    className="text-[var(--color-secondary)] hover:underline"
-                  >
-                    Verify your email
-                  </button>
-                </div>
+              {feedback.text && (
+                <p
+                  className={`text-sm mt-2 p-2 rounded-md text-center ${
+                    feedback.type === "error"
+                      ? "text-red-500 bg-red-100/10"
+                      : "text-green-500 bg-green-100/10"
+                  }`}
+                >
+                  {feedback.text}
+                </p>
               )}
-          </form>
+
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="w-full py-2 font-medium rounded-md transition"
+                style={{
+                  backgroundColor: "var(--color-primary)",
+                  color: "#fff",
+                  opacity: status === "loading" ? 0.7 : 1,
+                }}
+              >
+                {status === "loading" ? "Signing in..." : "Login"}
+              </button>
+
+              {feedback.type === "error" &&
+                feedback.text.toLowerCase().includes("verify") && (
+                  <div className="mt-3 text-center text-xs text-[var(--color-text-muted)]">
+                    Your account isn&apos;t verified.{" "}
+                    <button
+                      type="button"
+                      onClick={() => setMode("verifyEmail")}
+                      className="text-[var(--color-secondary)] hover:underline"
+                    >
+                      Verify your email
+                    </button>
+                  </div>
+                )}
+            </form>
+
+            <p className="text-center text-sm mt-4 text-[var(--color-text-muted)]">
+              Don’t have an account?{" "}
+              <Link
+                to="/register"
+                className="text-[var(--color-secondary)] hover:underline"
+              >
+                Sign up
+              </Link>
+            </p>
+          </>
         )}
 
         {/* ==== EMAIL VERIFICATION MODE ==== */}
@@ -578,19 +583,6 @@ export default function Login() {
               ← Back to login
             </button>
           </div>
-        )}
-
-        {/* Footer: link to register */}
-        {mode === "login" && (
-          <p className="text-center text-sm mt-4 text-[var(--color-text-muted)]">
-            Don’t have an account?{" "}
-            <Link
-              to="/register"
-              className="text-[var(--color-secondary)] hover:underline"
-            >
-              Sign up
-            </Link>
-          </p>
         )}
       </div>
     </div>

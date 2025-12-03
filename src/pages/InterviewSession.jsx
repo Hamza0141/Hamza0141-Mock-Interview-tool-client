@@ -13,7 +13,6 @@ import {
   Loader2,
   Play,
   CheckCircle2,
-  SwitchCamera,
   ArrowLeft,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -33,7 +32,6 @@ export default function InterviewSession() {
   const [answers, setAnswers] = useState([]);
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [evaluating, setEvaluating] = useState(false);
 
   const [timeLeft, setTimeLeft] = useState(120);
@@ -47,7 +45,6 @@ export default function InterviewSession() {
     mic: false,
     speaker: true,
   });
-  const [cameraFacing, setCameraFacing] = useState("user");
 
   const videoRef = useRef(null);
   const cameraStreamRef = useRef(null);
@@ -106,10 +103,10 @@ export default function InterviewSession() {
     window.speechSynthesis.speak(u);
   };
 
-  // 🎥 camera helpers
-  const startCamera = async (facing = "user") => {
+  // 🎥 camera helpers (front camera only)
+  const startCamera = async () => {
     try {
-      const constraints = { video: { facingMode: facing } };
+      const constraints = { video: { facingMode: "user" } };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
@@ -130,7 +127,7 @@ export default function InterviewSession() {
 
   const toggleCamera = async () => {
     if (!permissions.camera) {
-      await startCamera(cameraFacing);
+      await startCamera();
     } else {
       cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
       if (videoRef.current) videoRef.current.srcObject = null;
@@ -138,21 +135,18 @@ export default function InterviewSession() {
     }
   };
 
-  const flipCamera = async () => {
-    const nextFacing = cameraFacing === "user" ? "environment" : "user";
-    setCameraFacing(nextFacing);
-    await startCamera(nextFacing);
-  };
-
-  // 🎤 mic permission (like PublicSpeechSession)
+  // 🎤 mic permission
   const enableMic = async () => {
+    // if already allowed, don't re-request
+    if (permissions.mic) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((t) => t.stop());
       setPermissions((p) => ({ ...p, mic: true }));
     } catch (err) {
       console.error("Mic permission error:", err);
-      alert("⚠️ Microphone permission denied or unavailable.");
+      // avoid repeating confusing alerts if browser has already shown something
+      alert("⚠️ Unable to access microphone. Please check browser settings.");
     }
   };
 
@@ -206,13 +200,13 @@ export default function InterviewSession() {
       "0"
     )}`;
 
-  // 🎬 start interview (now async, auto-start camera)
+  // 🎬 start interview
   const startInterview = async () => {
     if (!permissions.mic) {
       await enableMic().catch(() => {});
     }
     if (!permissions.camera || !cameraStreamRef.current) {
-      await startCamera(cameraFacing).catch(() => {});
+      await startCamera().catch(() => {});
     }
     setStarted(true);
     if (questions[0]?.question_text) {
@@ -349,7 +343,7 @@ export default function InterviewSession() {
       </div>
     );
 
-  // ⚙️ permission setup (like PublicSpeechSession)
+  // ⚙️ permission setup (with preview)
   if (!started)
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-6">
@@ -376,13 +370,7 @@ export default function InterviewSession() {
             {permissions.camera ? <Video /> : <VideoOff />}
             <span className="text-xs mt-1">Camera</span>
           </button>
-          <button
-            onClick={flipCamera}
-            className="flex flex-col items-center px-4 py-2 rounded-md border text-gray-400 hover:text-[var(--color-primary)]"
-          >
-            <SwitchCamera />
-            <span className="text-xs mt-1">Flip</span>
-          </button>
+
           <button
             onClick={enableMic}
             className={`flex flex-col items-center px-4 py-2 rounded-md border ${
@@ -394,6 +382,7 @@ export default function InterviewSession() {
             <Mic />
             <span className="text-xs mt-1">Microphone</span>
           </button>
+
           <button
             onClick={toggleSpeaker}
             className={`flex flex-col items-center px-4 py-2 rounded-md border ${
@@ -407,6 +396,24 @@ export default function InterviewSession() {
           </button>
         </div>
 
+        {/* Camera preview while setting permissions */}
+        <div className="mb-6">
+          {permissions.camera && cameraStreamRef.current ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              className="w-72 h-56 rounded-lg border bg-black object-cover"
+              style={{ transform: "scaleX(-1)" }} // mirror like real webcam
+            />
+          ) : (
+            <div className="w-72 h-56 border rounded-lg flex items-center justify-center text-gray-400">
+              Camera preview will appear here
+            </div>
+          )}
+        </div>
+
         <button
           onClick={startInterview}
           className="px-6 py-2 rounded-md text-white font-medium bg-[var(--color-primary)] hover:opacity-90 flex items-center gap-2"
@@ -416,7 +423,7 @@ export default function InterviewSession() {
       </div>
     );
 
-  // 🧩 main UI (camera + real waveform + everything else)
+  // 🧩 main UI
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -459,9 +466,7 @@ export default function InterviewSession() {
               muted
               playsInline
               className="w-72 h-56 rounded-lg border bg-black object-cover"
-              style={{
-                transform: cameraFacing === "user" ? "scaleX(-1)" : "none",
-              }}
+              style={{ transform: "scaleX(-1)" }}
             />
           ) : (
             <div className="w-72 h-56 border rounded-lg flex items-center justify-center text-gray-400">
@@ -483,24 +488,19 @@ export default function InterviewSession() {
                 <VideoOff size={20} />
               )}
             </button>
-            <button
-              onClick={flipCamera}
-              className="p-2 rounded-full text-gray-500 hover:text-[var(--color-primary)]"
-            >
-              <SwitchCamera size={20} />
-            </button>
           </div>
         </div>
 
         {/* Input Controls + Waveform + Transcript */}
         <div className="flex flex-col">
           <div className="flex gap-3 mb-3">
+            {/* Start / Stop recording */}
             <button
               onClick={async () => {
                 if (recording) await stopRecordingSafe();
                 else await startRecordingWithCap();
               }}
-              disabled={inputMode === "type"}
+              // recording button is always enabled; only "running" state disables typing
               className={`flex-1 px-4 py-2 rounded-md border font-medium flex items-center justify-center gap-2 ${
                 recording
                   ? "text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)] animate-pulse"
@@ -511,11 +511,14 @@ export default function InterviewSession() {
               {recording ? "Stop Recording" : "Start Recording"}
             </button>
 
+            {/* Type Answer */}
             <button
               onClick={() => setInputMode("type")}
-              disabled={inputMode === "record"}
+              disabled={recording} // only disabled while recording is RUNNING
               className={`flex-1 px-4 py-2 rounded-md border font-medium flex items-center justify-center gap-2 ${
-                inputMode === "type"
+                recording
+                  ? "opacity-50 cursor-not-allowed"
+                  : inputMode === "type"
                   ? "text-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.6)] animate-pulse"
                   : "text-gray-500 hover:text-[var(--color-primary)]"
               }`}
@@ -578,11 +581,11 @@ export default function InterviewSession() {
         ) : (
           <button
             onClick={submitInterview}
-            disabled={submitting}
-            className="px-4 py-2 text-sm rounded-md text-white font-medium bg-green-600 hover:opacity-90 flex items-center gap-2"
+            disabled={evaluating}
+            className="px-4 py-2 text-sm rounded-md text-white font-medium bg-green-600 hover:opacity-90 flex items-center gap-2 disabled:opacity-60"
           >
             <CheckCircle2 size={16} />
-            {submitting ? "Submitting..." : "Submit"}
+            {evaluating ? "Submitting..." : "Submit"}
           </button>
         )}
       </div>

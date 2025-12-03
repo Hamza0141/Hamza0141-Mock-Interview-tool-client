@@ -11,17 +11,47 @@ import {
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchTickets, createTicket } from "../features/tickets/ticketSlice";
 
-const statusColors = {
-  open: "bg-blue-500/15 text-blue-300 border-blue-500/30",
-  in_progress: "bg-yellow-500/15 text-yellow-300 border-yellow-500/30",
-  resolved: "bg-green-500/15 text-green-300 border-green-500/30",
-  closed: "bg-gray-500/15 text-gray-300 border-gray-500/30",
+// Map status → inline styles
+const statusStyles = {
+  open: {
+    backgroundColor: "rgba(59,130,246,0.15)",
+    color: "#bfdbfe",
+    borderColor: "rgba(59,130,246,0.3)",
+  },
+  in_progress: {
+    backgroundColor: "rgba(234,179,8,0.15)",
+    color: "#fde68a",
+    borderColor: "rgba(234,179,8,0.3)",
+  },
+  resolved: {
+    backgroundColor: "rgba(34,197,94,0.15)",
+    color: "#bbf7d0",
+    borderColor: "rgba(34,197,94,0.3)",
+  },
+  closed: {
+    backgroundColor: "rgba(107,114,128,0.15)",
+    color: "#d1d5db",
+    borderColor: "rgba(107,114,128,0.3)",
+  },
 };
 
-const priorityColors = {
-  low: "bg-gray-500/15 text-gray-300 border-gray-500/30",
-  medium: "bg-orange-500/15 text-orange-300 border-orange-500/30",
-  high: "bg-red-500/15 text-red-300 border-red-500/30",
+// Map priority → inline styles
+const priorityStyles = {
+  low: {
+    backgroundColor: "rgba(107,114,128,0.15)",
+    color: "#d1d5db",
+    borderColor: "rgba(107,114,128,0.3)",
+  },
+  medium: {
+    backgroundColor: "rgba(249,115,22,0.15)",
+    color: "#fed7aa",
+    borderColor: "rgba(249,115,22,0.3)",
+  },
+  high: {
+    backgroundColor: "rgba(239,68,68,0.15)",
+    color: "#fecaca",
+    borderColor: "rgba(239,68,68,0.3)",
+  },
 };
 
 function fmtDate(d) {
@@ -84,22 +114,53 @@ export default function TicketsPage() {
     }
   };
 
+  const feedbackText = localFeedback || createError || "";
+  const feedbackColor = feedbackText.startsWith("✅") ? "#4ade80" : "#f87171";
+
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
+    <div
+      className="container"
+      style={{
+        maxWidth: "64rem",
+        padding: "1.5rem 1.5rem 2rem",
+      }}
+    >
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div
+        className="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between"
+        style={{ gap: "0.75rem", marginBottom: "1.75rem" }}
+      >
         <div>
-          <h1 className="text-2xl font-semibold text-[var(--color-text-main)]">
+          <h1
+            className="fw-semibold mb-1"
+            style={{ fontSize: "1.4rem", color: "var(--color-text-main)" }}
+          >
             Support Center
           </h1>
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            className="mb-0"
+            style={{ fontSize: "0.9rem", color: "var(--color-text-muted)" }}
+          >
             Create tickets and chat with support about any issues or questions.
           </p>
         </div>
         {user && (
-          <div className="text-xs bg-[var(--color-bg-panel)] border border-[var(--color-border)] rounded-lg px-4 py-2">
-            <p className="text-[var(--color-text-muted)]">Signed in as</p>
-            <p className="font-semibold text-[var(--color-text-main)]">
+          <div
+            className="rounded-3"
+            style={{
+              fontSize: "0.8rem",
+              padding: "0.5rem 1rem",
+              backgroundColor: "var(--color-bg-panel)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <p className="mb-0" style={{ color: "var(--color-text-muted)" }}>
+              Signed in as
+            </p>
+            <p
+              className="mb-0 fw-semibold"
+              style={{ color: "var(--color-text-main)" }}
+            >
               {user.first_name} {user.last_name}
             </p>
           </div>
@@ -107,46 +168,93 @@ export default function TicketsPage() {
       </div>
 
       {/* New Ticket Form */}
-      <div className="rounded-xl border bg-[var(--color-bg-panel)] p-5 space-y-4">
-        <div className="flex items-center gap-2 mb-1">
-          <PlusCircle size={18} className="text-[var(--color-primary)]" />
-          <h2 className="text-sm font-semibold text-[var(--color-text-main)]">
+      <div
+        className="rounded-4 border shadow-sm"
+        style={{
+          padding: "1.5rem",
+          marginBottom: "1.75rem",
+          backgroundColor: "var(--color-bg-panel)",
+          borderColor: "var(--color-border)",
+        }}
+      >
+        <div
+          className="d-flex align-items-center mb-2"
+          style={{ gap: "0.5rem" }}
+        >
+          <PlusCircle size={18} style={{ color: "var(--color-primary)" }} />
+          <h2
+            className="fw-semibold mb-0"
+            style={{
+              fontSize: "0.95rem",
+              color: "var(--color-text-main)",
+            }}
+          >
             Create a New Ticket
           </h2>
         </div>
 
-        <form onSubmit={handleCreate} className="space-y-4">
-          <div>
-            <label className="block text-xs mb-1">Subject *</label>
+        <form onSubmit={handleCreate}>
+          <div className="mb-3">
+            <label className="form-label mb-1" style={{ fontSize: "0.75rem" }}>
+              Subject *
+            </label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)] text-sm"
+              className="w-full p-2 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
               placeholder="e.g. Credits not added after payment"
               required
+              style={{
+                borderColor: "var(--color-border)",
+                color: "var(--color-text-main)",
+              }}
             />
           </div>
 
-          <div>
-            <label className="block text-xs mb-1">Describe your issue *</label>
+          <div className="mb-3">
+            <label className="form-label mb-1" style={{ fontSize: "0.75rem" }}>
+              Describe your issue *
+            </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-3 py-2 rounded-md border bg-transparent focus:ring-2 focus:ring-[var(--color-primary)] text-sm"
+              className="w-full p-2 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
               rows={3}
               placeholder="Please include as much detail as possible."
               required
+              style={{
+                fontSize: "0.9rem",
+                backgroundColor: "transparent",
+                borderColor: "var(--color-border)",
+                color: "var(--color-text-main)",
+              }}
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 justify-between">
+          <div
+            className="d-flex flex-wrap align-items-center justify-content-between"
+            style={{ gap: "1rem" }}
+          >
             <div>
-              <label className="block text-xs mb-1">Priority</label>
+              <label
+                className="form-label mb-1"
+                style={{ fontSize: "0.75rem" }}
+              >
+                Priority
+              </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="px-3 py-2 rounded-md border bg-[var(--color-bg-panel)] text-sm focus:ring-2 focus:ring-[var(--color-primary)]"
+                className="form-select"
+                style={{
+                  fontSize: "0.9rem",
+                  width: "auto",
+                  minWidth: "9rem",
+                  backgroundColor: "var(--color-bg-panel)",
+                  color: "var(--color-text-main)",
+                  borderColor: "var(--color-border)",
+                }}
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -157,11 +265,25 @@ export default function TicketsPage() {
             <button
               type="submit"
               disabled={createStatus === "loading"}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[var(--color-primary)] text-white text-sm font-medium shadow hover:opacity-90 disabled:opacity-60"
+              className="btn d-inline-flex align-items-center"
+              style={{
+                gap: "0.35rem",
+                padding: "0.45rem 1.1rem",
+                borderRadius: "0.5rem",
+                fontSize: "0.85rem",
+                fontWeight: 500,
+                backgroundColor: "var(--color-primary)",
+                color: "#fff",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                opacity: createStatus === "loading" ? 0.6 : 1,
+              }}
             >
               {createStatus === "loading" ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2
+                    size={16}
+                    style={{ animation: "spin 1s linear infinite" }}
+                  />
                   Creating...
                 </>
               ) : (
@@ -173,83 +295,162 @@ export default function TicketsPage() {
             </button>
           </div>
 
-          {(localFeedback || createError) && (
+          {feedbackText && (
             <p
-              className={`text-xs mt-1 ${
-                (localFeedback || createError).startsWith("✅")
-                  ? "text-green-400"
-                  : "text-red-400"
-              }`}
+              className="mt-2 mb-0"
+              style={{
+                fontSize: "0.8rem",
+                color: feedbackColor,
+              }}
             >
-              {localFeedback || createError}
+              {feedbackText}
             </p>
           )}
         </form>
       </div>
 
       {/* Tickets List */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <MessageSquare size={18} className="text-[var(--color-primary)]" />
-          <h2 className="text-sm font-semibold text-[var(--color-text-main)]">
+      <div>
+        <div
+          className="d-flex align-items-center mb-2"
+          style={{ gap: "0.5rem" }}
+        >
+          <MessageSquare size={18} style={{ color: "var(--color-primary)" }} />
+          <h2
+            className="fw-semibold mb-0"
+            style={{
+              fontSize: "0.95rem",
+              color: "var(--color-text-main)",
+            }}
+          >
             Your Tickets
           </h2>
         </div>
 
         {listStatus === "loading" && (
-          <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-            <Loader2 size={16} className="animate-spin" />
+          <div
+            className="d-flex align-items-center"
+            style={{
+              gap: "0.4rem",
+              fontSize: "0.9rem",
+              color: "var(--color-text-muted)",
+            }}
+          >
+            <Loader2
+              size={16}
+              style={{ animation: "spin 1s linear infinite" }}
+            />
             Loading tickets...
           </div>
         )}
 
         {listError && (
-          <div className="flex items-center gap-2 text-sm text-red-400">
+          <div
+            className="d-flex align-items-center mt-2"
+            style={{ gap: "0.4rem", fontSize: "0.9rem", color: "#f87171" }}
+          >
             <AlertCircle size={16} />
             {listError}
           </div>
         )}
 
         {listStatus === "succeeded" && tickets.length === 0 && (
-          <p className="text-sm text-[var(--color-text-muted)] italic">
+          <p
+            className="mt-2 fst-italic"
+            style={{ fontSize: "0.9rem", color: "var(--color-text-muted)" }}
+          >
             You don’t have any tickets yet.
           </p>
         )}
 
         {tickets.length > 0 && (
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="row g-3 mt-2">
             {tickets.map((t) => {
               const ticketId = t.ticket_id || t.id;
               const status = t.status || "open";
               const priorityKey = t.priority || "medium";
+              const statusStyle = statusStyles[status] || statusStyles.open;
+              const prioStyle =
+                priorityStyles[priorityKey] || priorityStyles.medium;
 
               return (
-                <button
-                  key={ticketId}
-                  onClick={() => navigate(`/tickets/${ticketId}`)}
-                  className="w-full text-left rounded-lg border bg-[var(--color-bg-panel)] p-4 hover:shadow-md hover:border-[var(--color-primary)]/50 transition-all"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-semibold text-[var(--color-text-main)] line-clamp-2">
-                      {t.subject || "No subject"}
-                    </h3>
-                    <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                        statusColors[status] || statusColors.open
-                      }`}
+                <div className="col-12 col-sm-6" key={ticketId}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/tickets/${ticketId}`)}
+                    className="w-100 text-start rounded-3 border"
+                    style={{
+                      padding: "1rem",
+                      backgroundColor: "var(--color-bg-panel)",
+                      borderColor: "var(--color-border)",
+                      transition:
+                        "box-shadow 0.15s ease, border-color 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 10px rgba(0,0,0,0.25)";
+                      e.currentTarget.style.borderColor =
+                        "rgba(243,146,40,0.6)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.boxShadow = "none";
+                      e.currentTarget.style.borderColor = "var(--color-border)";
+                    }}
+                  >
+                    <div className="d-flex justify-content-between align-items-start mb-1">
+                      <h3
+                        className="mb-0 fw-semibold"
+                        style={{
+                          fontSize: "0.9rem",
+                          color: "var(--color-text-main)",
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {t.subject || "No subject"}
+                      </h3>
+                      <span
+                        className="badge rounded-pill"
+                        style={{
+                          ...statusStyle,
+                          fontSize: "0.65rem",
+                          borderWidth: "1px",
+                          borderStyle: "solid",
+                          padding: "0.15rem 0.45rem",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {status.replace("_", " ")}
+                      </span>
+                    </div>
+
+                    <div
+                      className="d-flex justify-content-between align-items-center"
+                      style={{
+                        marginTop: "0.25rem",
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-muted)",
+                      }}
                     >
-                      {status}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-[var(--color-text-muted)] mt-1">
-                    <span>{fmtDate(t.created_at)}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full border ${priorityColors[priorityKey]}`}
-                    >
-                      {priorityKey} priority
-                    </span>
-                  </div>
-                </button>
+                      <span>{fmtDate(t.created_at)}</span>
+                      <span
+                        className="badge rounded-pill"
+                        style={{
+                          ...prioStyle,
+                          fontSize: "0.65rem",
+                          borderWidth: "1px",
+                          borderStyle: "solid",
+                          padding: "0.15rem 0.45rem",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {priorityKey} priority
+                      </span>
+                    </div>
+                  </button>
+                </div>
               );
             })}
           </div>

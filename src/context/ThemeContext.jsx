@@ -1,17 +1,22 @@
+// ThemeContext.jsx
 import { createContext, useState, useEffect } from "react";
 
 export const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("theme") || "light"
+  );
 
   useEffect(() => {
-    const root = window.document.documentElement;
+    const root = document.documentElement; // <html>
+
     if (theme === "dark") {
-      document.documentElement.classList.add("dark");
+      root.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("dark");
+      root.classList.remove("dark");
     }
+
     localStorage.setItem("theme", theme);
   }, [theme]);
 

@@ -7,7 +7,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div
-      className="min-h-screen transition-colors duration-300"
+      className="min-h-screen transition-colors duration-300 selfmock-dashboard"
       style={{
         backgroundColor: "var(--color-bg-body)",
         color: "var(--color-text-main)",

@@ -82,12 +82,23 @@ export default function ReportPage() {
   // ---- Early returns AFTER all hooks ----
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh]">
+      <div
+        className="d-flex flex-column align-items-center justify-content-center text-center"
+        style={{ minHeight: "80vh" }}
+      >
         <Loader2
-          className="animate-spin text-[var(--color-primary)]"
           size={36}
+          className="mb-2"
+          style={{ color: "var(--color-primary)" }}
         />
-        <p className="mt-3 text-[var(--color-text-muted)] text-sm">
+        <p
+          className="mb-0"
+          style={{
+            marginTop: "0.75rem",
+            fontSize: "0.9rem",
+            color: "var(--color-text-muted)",
+          }}
+        >
           Fetching your AI performance summary...
         </p>
       </div>
@@ -96,7 +107,13 @@ export default function ReportPage() {
 
   if (error || !report) {
     return (
-      <div className="text-center py-20 text-[var(--color-text-muted)]">
+      <div
+        className="text-center"
+        style={{
+          padding: "5rem 0",
+          color: "var(--color-text-muted)",
+        }}
+      >
         {error || "No performance data available yet."}
       </div>
     );
@@ -104,57 +121,108 @@ export default function ReportPage() {
 
   // ---- Main render ----
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
+    <div
+      className="container"
+      style={{
+        maxWidth: "72rem",
+        paddingTop: "1.5rem",
+        paddingBottom: "1.5rem",
+      }}
+    >
       {/* ===== Header Section ===== */}
-      <div className="text-center">
-        <h1 className="text-3xl font-semibold text-[var(--color-primary)]">
-          AI Interview & Speech Report
+      <div className="text-center mb-4">
+        <h1
+          className="fw-semibold"
+          style={{
+            fontSize: "1.9rem",
+            color: "var(--color-primary)",
+          }}
+        >
+          AI Interview &amp; Speech Report
         </h1>
-        <p className="text-[var(--color-text-muted)] mt-2 text-sm">
+        <p
+          className="mb-0"
+          style={{
+            marginTop: "0.5rem",
+            fontSize: "0.9rem",
+            color: "var(--color-text-muted)",
+          }}
+        >
           Your overall performance summary across completed interviews and
           public speeches.
         </p>
       </div>
 
       {/* ===== Comparison Summary ===== */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="row g-4 mb-4">
         {cards.map((card, i) => (
-          <motion.div
-            key={i}
-            whileHover={{
-              scale: 1.04,
-              borderColor: card.color,
-              boxShadow: `0 0 15px ${card.color}40`,
-            }}
-            transition={{ duration: 0.4 }}
-            className="p-6 rounded-xl border shadow-sm bg-[var(--color-bg-panel)] text-center transition-all"
-          >
-            <div className="flex justify-center items-center gap-2 text-[var(--color-primary)] mb-2">
-              {card.icon}
-              <h3 className="font-semibold">{card.title}</h3>
-            </div>
-            <p className="text-4xl font-bold" style={{ color: card.color }}>
-              {safeRoundPercent(card.avg)}
-            </p>
-            <p className="text-xs text-[var(--color-text-muted)] mt-1">
-              {safeNum(card.count)} {card.title.toLowerCase()} recorded
-            </p>
-          </motion.div>
+          <div className="col-12 col-md-6" key={i}>
+            <motion.div
+              whileHover={{
+                scale: 1.04,
+                borderColor: card.color,
+                boxShadow: `0 0 15px ${card.color}40`,
+              }}
+              transition={{ duration: 0.4 }}
+              className="h-100 text-center border rounded-4 shadow-sm"
+              style={{
+                padding: "1.5rem",
+                backgroundColor: "var(--color-bg-panel)",
+                borderColor: "var(--color-border)",
+                transition: "all 0.2s ease-in-out",
+              }}
+            >
+              <div
+                className="d-flex justify-content-center align-items-center gap-2 mb-2"
+                style={{ color: "var(--color-primary)" }}
+              >
+                {card.icon}
+                <h3
+                  className="mb-0 fw-semibold"
+                  style={{ fontSize: "1rem" }}
+                >
+                  {card.title}
+                </h3>
+              </div>
+              <p
+                className="mb-1 fw-bold"
+                style={{ fontSize: "2.2rem", color: card.color }}
+              >
+                {safeRoundPercent(card.avg)}
+              </p>
+              <p
+                className="mb-0"
+                style={{
+                  fontSize: "0.8rem",
+                  color: "var(--color-text-muted)",
+                  marginTop: "0.3rem",
+                }}
+              >
+                {safeNum(card.count)} {card.title.toLowerCase()} recorded
+              </p>
+            </motion.div>
+          </div>
         ))}
       </div>
 
       {/* ===== Recent Activities ===== */}
-      <div>
-        <h2 className="text-xl font-semibold text-[var(--color-primary)] mb-4">
+      <div className="mb-3">
+        <h2
+          className="fw-semibold mb-3"
+          style={{ fontSize: "1.25rem", color: "var(--color-primary)" }}
+        >
           Recent Activities
         </h2>
 
         {recent.length === 0 ? (
-          <p className="text-[var(--color-text-muted)] italic">
+          <p
+            className="fst-italic mb-0"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             You haven’t completed any sessions yet.
           </p>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="row g-4">
             {recent.map((raw, idx) => {
               const item = {
                 id: raw?.id ?? `item-${idx}`,
@@ -186,105 +254,193 @@ export default function ReportPage() {
               );
 
               return (
-                <motion.div
+                <div
+                  className="col-12 col-sm-6 col-lg-4"
                   key={item.id}
-                  whileHover={{
-                    scale: 1.05,
-                    borderColor: accent,
-                    boxShadow: `0 0 20px ${accent}50`,
-                  }}
-                  transition={{ duration: 0.4 }}
-                  className={`p-5 rounded-xl border bg-[var(--color-bg-card)] transition-all cursor-pointer relative ${
-                    isPending ? "opacity-70" : "opacity-100"
-                  }`}
-                  onClick={() =>
-                    navigate(
-                      item.type === "speech"
-                        ? `/speech/${item.id}`
-                        : `/evaluation/${item.id}`
-                    )
-                  }
                 >
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold text-[var(--color-primary)] leading-snug">
-                      {item.title}
-                    </h3>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        item.status === "completed"
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-yellow-500/20 text-yellow-400"
-                      }`}
+                  <motion.div
+                    whileHover={{
+                      scale: 1.05,
+                      borderColor: accent,
+                      boxShadow: `0 0 20px ${accent}50`,
+                    }}
+                    transition={{ duration: 0.4 }}
+                    className="h-100 border rounded-4 position-relative"
+                    style={{
+                      padding: "1.25rem",
+                      backgroundColor: "var(--color-bg-card)",
+                      cursor: "pointer",
+                      opacity: isPending ? 0.7 : 1,
+                      transition: "all 0.2s ease-in-out",
+                    }}
+                    onClick={() =>
+                      navigate(
+                        item.type === "speech"
+                          ? `/speech/${item.id}`
+                          : `/evaluation/${item.id}`
+                      )
+                    }
+                  >
+                    <div className="d-flex justify-content-between align-items-start">
+                      <h3
+                        className="mb-1 fw-semibold"
+                        style={{
+                          fontSize: "1rem",
+                          color: "var(--color-primary)",
+                          lineHeight: 1.25,
+                        }}
+                      >
+                        {item.title}
+                      </h3>
+                      <span
+                        className="badge rounded-pill text-capitalize"
+                        style={{
+                          fontSize: "0.7rem",
+                          padding: "0.25rem 0.6rem",
+                          backgroundColor:
+                            item.status === "completed"
+                              ? "rgba(34,197,94,0.2)"
+                              : "rgba(234,179,8,0.2)",
+                          color:
+                            item.status === "completed"
+                              ? "#4ade80"
+                              : "#facc15",
+                        }}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+
+                    <div
+                      className="d-flex align-items-center gap-2 mt-2"
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--color-text-muted)",
+                      }}
                     >
-                      {item.status}
-                    </span>
-                  </div>
+                      <Clock size={12} />
+                      <span>
+                        {fmtDate(item.started_at)} • {difficultyLabel}
+                      </span>
+                    </div>
 
-                  <div className="mt-2 flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
-                    <Clock size={12} />
-                    <span>
-                      {fmtDate(item.started_at)} • {difficultyLabel}
-                    </span>
-                  </div>
+                    <div className="d-flex align-items-center gap-2 mt-3">
+                      <TrendingUp
+                        size={16}
+                        style={{ color: "var(--color-primary)" }}
+                      />
+                      <p
+                        className="mb-0 fw-semibold"
+                        style={{
+                          color: accent,
+                          fontSize: "0.9rem",
+                        }}
+                      >
+                        {item.average_score > 0
+                          ? `${Math.round(item.average_score)}%`
+                          : "Awaiting Evaluation"}
+                      </p>
+                    </div>
 
-                  <div className="mt-4 flex items-center gap-2">
-                    <TrendingUp
-                      size={16}
-                      className="text-[var(--color-primary)]"
-                    />
-                    <p className="font-semibold" style={{ color: accent }}>
-                      {item.average_score > 0
-                        ? `${Math.round(item.average_score)}%`
-                        : "Awaiting Evaluation"}
-                    </p>
-                  </div>
-
-                  {metricEntries.length > 0 && !item.metrics?.note && (
-                    <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-[var(--color-text-muted)]">
-                      {metricEntries.slice(0, 3).map(([k, v], i) => (
-                        <div
-                          key={i}
-                          className="bg-[var(--color-bg-panel)] rounded-md py-1 text-center hover:shadow-md transition-all"
-                        >
-                          <p className="font-medium" style={{ color: accent }}>
-                            {Math.round(v)}%
-                          </p>
-                          <p className="text-[10px] uppercase opacity-70">
-                            {k}
-                          </p>
+                    {metricEntries.length > 0 && !item.metrics?.note && (
+                      <div className="mt-2">
+                        <div className="row g-2" style={{ fontSize: "0.75rem" }}>
+                          {metricEntries.slice(0, 3).map(([k, v], i) => (
+                            <div
+                              className="col-4"
+                              key={i}
+                            >
+                              <div
+                                className="text-center rounded-3"
+                                style={{
+                                  padding: "0.25rem 0.2rem",
+                                  backgroundColor: "var(--color-bg-panel)",
+                                  transition: "box-shadow 0.15s ease-in-out",
+                                }}
+                              >
+                                <p
+                                  className="mb-0 fw-medium"
+                                  style={{
+                                    color: accent,
+                                    fontSize: "0.8rem",
+                                  }}
+                                >
+                                  {Math.round(v)}%
+                                </p>
+                                <p
+                                  className="mb-0 text-uppercase"
+                                  style={{
+                                    fontSize: "0.6rem",
+                                    opacity: 0.7,
+                                  }}
+                                >
+                                  {k}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    )}
 
-                  {item.skills.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {item.skills.slice(0, 4).map((skill, i) => (
-                        <span
-                          key={`${item.id}-skill-${i}`}
-                          className="text-[10px] px-2 py-1 bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 rounded-full text-[var(--color-primary)]"
-                        >
-                          {String(skill)}
-                        </span>
-                      ))}
-                      {item.skills.length > 4 && (
-                        <span className="text-[10px] italic text-[var(--color-text-muted)]">
-                          +{item.skills.length - 4} more
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
+                    {item.skills.length > 0 && (
+                      <div
+                        className="d-flex flex-wrap mt-3"
+                        style={{ gap: "0.25rem" }}
+                      >
+                        {item.skills.slice(0, 4).map((skill, i) => (
+                          <span
+                            key={`${item.id}-skill-${i}`}
+                            className="badge rounded-pill"
+                            style={{
+                              fontSize: "0.6rem",
+                              padding: "0.2rem 0.55rem",
+                              backgroundColor: "rgba(243,146,40,0.1)",
+                              border: "1px solid rgba(243,146,40,0.2)",
+                              color: "var(--color-primary)",
+                            }}
+                          >
+                            {String(skill)}
+                          </span>
+                        ))}
+                        {item.skills.length > 4 && (
+                          <span
+                            className="fst-italic"
+                            style={{
+                              fontSize: "0.6rem",
+                              color: "var(--color-text-muted)",
+                            }}
+                          >
+                            +{item.skills.length - 4} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Feedback link */}
       <Link to="/feedback">
         <button
           type="button"
-          onClick=""
-          className="mt-3 text-xs text-[var(--color-text-muted)] hover:underline"
+          onClick={() => {}}
+          className="btn btn-link p-0 mt-2"
+          style={{
+            fontSize: "0.75rem",
+            color: "var(--color-text-muted)",
+            textDecoration: "none",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.textDecoration = "underline";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.textDecoration = "none";
+          }}
         >
           Give us your feedback
         </button>

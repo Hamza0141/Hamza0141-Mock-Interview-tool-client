@@ -13,3 +13,7 @@ select option:hover {
   background-color: var(--color-primary);
   color: white;
 }
+
+.selfmock-dashboard {
+  overflow-x: hidden;
+}

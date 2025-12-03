@@ -2,12 +2,19 @@ import { Link } from "react-router-dom";
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-screen bg-[var(--color-bg-body)] text-[var(--color-text-main)] px-4 py-10">
+    <main
+      className="min-h-screen bg-[var(--color-bg-body)] text-[var(--color-text-main)] px-4 py-10"
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#05051E",
+        transition: "background-color 0.3s ease",
+      }}
+    >
       <div className="max-w-5xl mx-auto bg-[var(--color-bg-panel)] border border-[var(--color-border)] rounded-2xl shadow-sm p-8 md:p-10 space-y-8">
         {/* Header */}
         <header className="space-y-2 text-center">
           <h1 className="text-3xl font-bold text-[var(--color-primary)]">
-            SelfMock – Privacy Policy
+            Prepare With AI – Privacy Policy
           </h1>
           <p className="text-sm text-[var(--color-text-muted)]">
             Last updated: January 2025
@@ -18,12 +25,12 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-3 text-sm leading-relaxed">
           <p>
             This Privacy Policy explains how{" "}
-            <span className="font-semibold">SelfMock</span> (“we”, “us”, or
-            “our”) collects, uses, and protects your information when you use
+            <span className="font-semibold">Prepare With AI</span> (“we”, “us”,
+            or “our”) collects, uses, and protects your information when you use
             our AI-powered mock interview and speech training platform.
           </p>
           <p>
-            By using SelfMock, you agree to the collection and use of
+            By using Prepare With AI, you agree to the collection and use of
             information in accordance with this Policy.
           </p>
         </section>
@@ -64,7 +71,7 @@ export default function PrivacyPolicyPage() {
 
           <h3 className="text-sm font-semibold">2.1 Camera</h3>
           <p className="text-sm leading-relaxed">
-            SelfMock may request access to your camera to simulate a real
+            Prepare With AI may request access to your camera to simulate a real
             interview or presentation environment. Camera access is purely for
             user experience; we do not store, transmit, or analyze video beyond
             the active session.
@@ -83,7 +90,7 @@ export default function PrivacyPolicyPage() {
               generate a transcript.
             </li>
             <li>
-              Raw audio is not stored by SelfMock after transcription is
+              Raw audio is not stored by Prepare With AI after transcription is
               completed.
             </li>
             <li>
@@ -104,7 +111,7 @@ export default function PrivacyPolicyPage() {
             3. How We Use Your Information
           </h2>
           <ul className="list-disc pl-5 text-sm space-y-1 leading-relaxed">
-            <li>To create and manage your SelfMock account</li>
+            <li>To create and manage your Prepare With AI account</li>
             <li>To generate interview questions and evaluate your responses</li>
             <li>To provide feedback and performance summaries</li>
             <li>To show you your past sessions and improvement history</li>
@@ -122,7 +129,7 @@ export default function PrivacyPolicyPage() {
             4. Payments & Stripe
           </h2>
           <p className="text-sm leading-relaxed">
-            Payments on SelfMock are handled through{" "}
+            Payments on Prepare With AI are handled through{" "}
             <span className="font-semibold">Stripe</span>, a third-party payment
             processor. We do not store your full payment card information on our
             servers.
@@ -156,7 +163,7 @@ export default function PrivacyPolicyPage() {
             5. Cookies & Session Tokens
           </h2>
           <p className="text-sm leading-relaxed">
-            SelfMock uses cookies in a focused, security-oriented way:
+            Prepare With AI uses cookies in a focused, security-oriented way:
           </p>
           <ul className="list-disc pl-5 text-sm space-y-1 leading-relaxed">
             <li>
@@ -173,7 +180,7 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p className="text-sm leading-relaxed">
             You can disable cookies in your browser settings, but some features
-            of SelfMock may not work correctly without them.
+            of Prepare With AI may not work correctly without them.
           </p>
         </section>
 
@@ -273,10 +280,10 @@ export default function PrivacyPolicyPage() {
           <p className="text-sm leading-relaxed">
             To exercise these rights, contact us at{" "}
             <a
-              href="mailto:hamzaserke@gmail.com"
+              href="mailto:support@prepwithai.net"
               className="text-[var(--color-primary)] underline"
             >
-              hamzaserke@gmail.com
+              support@prepwithai.net
             </a>
             .
           </p>
@@ -288,9 +295,10 @@ export default function PrivacyPolicyPage() {
             11. Children’s Privacy
           </h2>
           <p className="text-sm leading-relaxed">
-            SelfMock is not specifically directed to children, and we do not
-            knowingly collect date of birth or verify age. If you believe a
-            minor is using SelfMock without proper consent, please contact us.
+            Prepare With AI is not specifically directed to children, and we do
+            not knowingly collect date of birth or verify age. If you believe a
+            minor is using Prepare With AI without proper consent, please
+            contact us.
           </p>
         </section>
 
@@ -301,17 +309,17 @@ export default function PrivacyPolicyPage() {
           </h2>
           <p className="text-sm leading-relaxed">
             We may update this Privacy Policy from time to time. Updates will be
-            posted on this page, and continued use of SelfMock after changes
-            means you accept the revised Policy.
+            posted on this page, and continued use of Prepare With AI after
+            changes means you accept the revised Policy.
           </p>
           <p className="text-sm leading-relaxed">
             If you have questions or concerns about privacy, please contact us
             at{" "}
             <a
-              href="mailto:hamzaserke@gmail.com"
+              href="mailto:support@prepwithai.net"
               className="text-[var(--color-primary)] underline"
             >
-              hamzaserke@gmail.com
+              support@prepwithai.net
             </a>
             .
           </p>
@@ -320,7 +328,7 @@ export default function PrivacyPolicyPage() {
         {/* Footer */}
         <footer className="pt-4 border-t border-[var(--color-border)] mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
           <span>
-            © {new Date().getFullYear()} SelfMock. All rights reserved.
+            © {new Date().getFullYear()} Prepare With AI. All rights reserved.
           </span>
           <div className="flex gap-3">
             <Link

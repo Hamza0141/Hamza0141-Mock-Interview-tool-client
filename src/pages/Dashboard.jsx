@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchUserReport } from "../features/report/reportSlice";
 import { getUserById } from "../features/user/userSlice";
+
 // ---------- helpers ----------
 function fmtDate(d) {
   try {
@@ -38,16 +39,32 @@ function safeRoundPercent(n) {
 }
 
 function statusBadge(status) {
-  if (status === "completed")
-    return "bg-green-500/15 text-green-400 border border-green-500/30";
-  if (status === "active")
-    return "bg-yellow-500/15 text-yellow-300 border border-yellow-500/30";
-  return "bg-gray-500/10 text-gray-300 border border-gray-500/30";
+  if (status === "completed") {
+    return "badge rounded-pill bg-success text-light";
+  }
+  if (status === "active") {
+    return "badge rounded-pill bg-warning text-dark";
+  }
+  return "badge rounded-pill bg-secondary text-light";
 }
 
 function LoaderSpinner() {
   return (
-    <div className="w-12 h-12 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+    <div
+      className="d-flex flex-column align-items-center justify-content-center"
+      style={{ minHeight: "80vh" }}
+    >
+      <div
+        className="spinner-border"
+        role="status"
+        style={{ color: "var(--color-primary)" }}
+      >
+        <span className="visually-hidden">Loading...</span>
+      </div>
+      <p className="mt-3 small" style={{ color: "var(--color-text-muted)" }}>
+        Loading your dashboard...
+      </p>
+    </div>
   );
 }
 
@@ -60,16 +77,33 @@ function StatCard({ icon, label, value, accent }) {
         boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
         borderColor: accent || "var(--color-border)",
       }}
-      className="rounded-xl border bg-[var(--color-bg-panel)] p-4 flex flex-col gap-2 transition-all"
+      className="card h-100"
+      style={{
+        backgroundColor: "var(--color-bg-panel)",
+        borderColor: "var(--color-border)",
+        borderWidth: "1px",
+        borderStyle: "solid",
+      }}
     >
-      <div className="flex items-center gap-2 text-[var(--color-text-muted)] text-xs">
-        <span className="p-1.5 rounded-full bg-black/30 flex items-center justify-center">
-          {icon}
-        </span>
-        <span>{label}</span>
-      </div>
-      <div className="text-lg font-semibold" style={{ color: accent }}>
-        {value}
+      <div className="card-body d-flex flex-column gap-2">
+        <div
+          className="d-flex align-items-center gap-2 small"
+          style={{ color: "var(--color-text-muted)" }}
+        >
+          <span
+            className="d-flex align-items-center justify-content-center rounded-circle"
+            style={{
+              padding: "0.35rem",
+              backgroundColor: "rgba(0,0,0,0.12)",
+            }}
+          >
+            {icon}
+          </span>
+          <span>{label}</span>
+        </div>
+        <div className="fs-5 fw-semibold" style={{ color: accent }}>
+          {value}
+        </div>
       </div>
     </motion.div>
   );
@@ -96,25 +130,20 @@ export default function DashboardPage() {
   }, [dispatch, user?.profile_id]);
 
   if (loading) {
+    return <LoaderSpinner />;
+  }
+
+  if (error || !report) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh]">
-        <LoaderSpinner />
-        <p className="mt-3 text-[var(--color-text-muted)] text-sm">
-          Loading your dashboard...
+      <div className="container py-5 text-center">
+        <p style={{ color: "var(--color-text-muted)" }}>
+          {error || "No performance data available yet."}
         </p>
       </div>
     );
   }
 
-  if (error || !report) {
-    return (
-      <div className="text-center py-20 text-[var(--color-text-muted)]">
-        {error || "No performance data available yet."}
-      </div>
-    );
-  }
-
-  // ---- Safe unwrapping with defaults (same pattern as ReportPage) ----
+  // ---- Safe unwrapping with defaults ----
   const safeData = report?.data ?? report ?? {};
   const performanceComparison = safeData?.performanceComparison ?? {
     interviews: { avgScore: 0, count: 0 },
@@ -143,7 +172,6 @@ export default function DashboardPage() {
   const maxTrend = Math.max(100, ...interviewTrend, ...speechTrend);
 
   // ---- skills snapshot from recent interview.skills ----
-
   const skillCounts = {};
   recent
     .filter((it) => it.type === "interview" && Array.isArray(it.skills))
@@ -154,13 +182,13 @@ export default function DashboardPage() {
       });
     });
 
-  // Convert → sorted → take 5 only
   const sortedSkills = Object.entries(skillCounts).sort((a, b) => b[1] - a[1]);
   const topFive = sortedSkills.slice(0, 5).map(([name, count]) => ({
     name,
     count,
   }));
   const remainingCount = Math.max(sortedSkills.length - 5, 0);
+
   // ---- recent cards ----
   const recentCards = lastN.map((item) => ({
     id: item.id,
@@ -179,31 +207,67 @@ export default function DashboardPage() {
   const firstName = user?.first_name || "There";
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-8">
+    <div className="container py-4">
       {/* ===== Top Header ===== */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-md-between gap-3 mb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <Brain className="text-[var(--color-primary)]" size={24} />
-            <h1 className="text-2xl font-semibold text-[var(--color-text-main)]">
+          <div className="d-flex align-items-center gap-2">
+            <Brain size={24} style={{ color: "var(--color-primary)" }} />
+            <h1
+              className="h4 mb-0 fw-semibold"
+              style={{ color: "var(--color-text-main)" }}
+            >
               Welcome back, {firstName} 👋
             </h1>
           </div>
-          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+          <p
+            className="small mt-1 mb-0"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             Here’s an overview of your latest mock interviews and public
             speeches.
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="text-xs bg-[var(--color-bg-panel)] border border-[var(--color-border)] rounded-lg px-4 py-2">
-            <p className="text-[var(--color-text-muted)]">Credits</p>
-            <p className="text-lg font-semibold">{user?.credit_balance ?? 0}</p>
+        <div className="d-flex align-items-center gap-3">
+          <div
+            className="small px-3 py-2 rounded-3 border"
+            style={{
+              backgroundColor: "var(--color-bg-panel)",
+              borderColor: "var(--color-border)",
+            }}
+          >
+            <p
+              className="mb-0"
+              style={{ color: "var(--color-text-muted)", fontSize: "11px" }}
+            >
+              Credits
+            </p>
+            <p
+              className="mb-0 fs-5 fw-semibold"
+              style={{ color: "var(--color-text-main)" }}
+            >
+              {user?.credit_balance ?? 0}
+            </p>
           </div>
           {user?.free_trial == 1 && (
-            <div className="text-xs bg-[var(--color-bg-panel)] border border-[var(--color-border)] rounded-lg px-4 py-2">
-              <p className="text-[var(--color-text-muted)]">Free Trial</p>
-              <p className="text-sm font-semibold">
+            <div
+              className="small px-3 py-2 rounded-3 border"
+              style={{
+                backgroundColor: "var(--color-bg-panel)",
+                borderColor: "var(--color-border)",
+              }}
+            >
+              <p
+                className="mb-0"
+                style={{ color: "var(--color-text-muted)", fontSize: "11px" }}
+              >
+                Free Trial
+              </p>
+              <p
+                className="mb-0 fw-semibold"
+                style={{ color: "var(--color-text-main)" }}
+              >
                 {user?.free_trial > 0 ? "Available" : "Used"}
               </p>
             </div>
@@ -212,177 +276,292 @@ export default function DashboardPage() {
       </div>
 
       {/* ===== Overview Cards ===== */}
-      <div className="grid md:grid-cols-4 gap-4">
-        <StatCard
-          icon={<BarChart3 size={18} />}
-          label="Avg Interview Score"
-          value={safeRoundPercent(interviewsAvg)}
-          accent="#f39228"
-        />
-        <StatCard
-          icon={<Mic size={18} />}
-          label="Avg Speech Score"
-          value={safeRoundPercent(speechesAvg)}
-          accent="#4b6cb7"
-        />
-        <StatCard
-          icon={<Activity size={18} />}
-          label="Total Interviews"
-          value={interviewsCount}
-          accent="var(--color-primary)"
-        />
-        <StatCard
-          icon={<Clock size={18} />}
-          label="Total Speeches"
-          value={speechesCount}
-          accent="#4b6cb7"
-        />
+      <div className="row g-3 mb-4">
+        <div className="col-12 col-md-3">
+          <StatCard
+            icon={<BarChart3 size={18} />}
+            label="Avg Interview Score"
+            value={safeRoundPercent(interviewsAvg)}
+            accent="#f39228"
+          />
+        </div>
+        <div className="col-12 col-md-3">
+          <StatCard
+            icon={<Mic size={18} />}
+            label="Avg Speech Score"
+            value={safeRoundPercent(speechesAvg)}
+            accent="#4b6cb7"
+          />
+        </div>
+        <div className="col-12 col-md-3">
+          <StatCard
+            icon={<Activity size={18} />}
+            label="Total Interviews"
+            value={interviewsCount}
+            accent="var(--color-primary)"
+          />
+        </div>
+        <div className="col-12 col-md-3">
+          <StatCard
+            icon={<Clock size={18} />}
+            label="Total Speeches"
+            value={speechesCount}
+            accent="#4b6cb7"
+          />
+        </div>
       </div>
 
       {/* ===== Middle: Trends + Skills ===== */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="row g-4 mb-4">
         {/* Trend chart */}
-        <motion.div
-          whileHover={{
-            boxShadow: "0 0 20px rgba(243,146,40,0.25)",
-            borderColor: "#f39228",
-          }}
-          className="lg:col-span-2 rounded-xl border bg-[var(--color-bg-panel)] p-5 transition-all"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={18} className="text-[var(--color-primary)]" />
-              <h2 className="font-semibold text-[var(--color-text-main)] text-sm">
-                Performance Trend (Last {lastN.length || 0} Sessions)
-              </h2>
+        <div className="col-12 col-lg-8">
+          <motion.div
+            whileHover={{
+              boxShadow: "0 0 20px rgba(243,146,40,0.25)",
+              borderColor: "#f39228",
+            }}
+            className="h-100 rounded-3 p-4 border"
+            style={{
+              backgroundColor: "var(--color-bg-panel)",
+              borderColor: "var(--color-border)",
+            }}
+          >
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <div className="d-flex align-items-center gap-2">
+                <TrendingUp
+                  size={18}
+                  style={{ color: "var(--color-primary)" }}
+                />
+                <h2
+                  className="h6 mb-0 fw-semibold"
+                  style={{ color: "var(--color-text-main)" }}
+                >
+                  Performance Trend (Last {lastN.length || 0} Sessions)
+                </h2>
+              </div>
+              <span
+                className="small"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                Based on your recent interviews & speeches
+              </span>
             </div>
-            <span className="text-xs text-[var(--color-text-muted)]">
-              Based on your recent interviews & speeches
-            </span>
-          </div>
 
-          {lastN.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              No sessions yet. Start an interview or speech to see your trend.
-            </p>
-          ) : (
-            <>
-              <div className="flex items-end gap-4 h-40">
-                {trendLabels.map((label, index) => {
-                  const intVal = interviewTrend[index];
-                  const spVal = speechTrend[index];
-                  const intHeight = (intVal / maxTrend) * 100;
-                  const spHeight = (spVal / maxTrend) * 100;
+            {lastN.length === 0 ? (
+              <p
+                className="small mb-0"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                No sessions yet. Start an interview or speech to see your trend.
+              </p>
+            ) : (
+              <>
+                <div
+                  className="d-flex align-items-end gap-3"
+                  style={{ height: "10rem" }}
+                >
+                  {trendLabels.map((label, index) => {
+                    const intVal = interviewTrend[index];
+                    const spVal = speechTrend[index];
+                    const intHeight = (intVal / maxTrend) * 100;
+                    const spHeight = (spVal / maxTrend) * 100;
 
-                  return (
-                    <div
-                      key={`${label}-${index}`}
-                      className="flex-1 flex flex-col gap-2"
-                    >
-                      <div className="flex gap-1 items-end h-28">
-                        {/* Interview bar */}
-                        <div className="flex-1 flex flex-col justify-end">
-                          <div
-                            className="w-full rounded-md bg-[var(--color-primary)]/80"
-                            style={{ height: `${intHeight || 4}%` }}
-                          ></div>
-                          {intVal > 0 && (
-                            <span className="text-[10px] mt-1 text-[var(--color-text-muted)]">
-                              {Math.round(intVal)}%
-                            </span>
-                          )}
+                    return (
+                      <div
+                        key={`${label}-${index}`}
+                        className="d-flex flex-column gap-2 flex-grow-1"
+                      >
+                        <div
+                          className="d-flex gap-1 align-items-end"
+                          style={{ height: "7rem" }}
+                        >
+                          {/* Interview bar */}
+                          <div className="d-flex flex-column justify-content-end flex-grow-1">
+                            <div
+                              className="w-100 rounded-2"
+                              style={{
+                                height: `${intHeight || 4}%`,
+                                backgroundColor: "var(--color-primary)",
+                              }}
+                            />
+                            {intVal > 0 && (
+                              <span
+                                className="mt-1"
+                                style={{
+                                  fontSize: "10px",
+                                  color: "var(--color-text-muted)",
+                                }}
+                              >
+                                {Math.round(intVal)}%
+                              </span>
+                            )}
+                          </div>
+                          {/* Speech bar */}
+                          <div className="d-flex flex-column justify-content-end flex-grow-1">
+                            <div
+                              className="w-100 rounded-2"
+                              style={{
+                                height: `${spHeight || 4}%`,
+                                backgroundColor: "rgba(59,130,246,0.8)",
+                              }}
+                            />
+                            {spVal > 0 && (
+                              <span
+                                className="mt-1"
+                                style={{
+                                  fontSize: "10px",
+                                  color: "var(--color-text-muted)",
+                                }}
+                              >
+                                {Math.round(spVal)}%
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        {/* Speech bar */}
-                        <div className="flex-1 flex flex-col justify-end">
-                          <div
-                            className="w-full rounded-md bg-blue-500/80"
-                            style={{ height: `${spHeight || 4}%` }}
-                          ></div>
-                          {spVal > 0 && (
-                            <span className="text-[10px] mt-1 text-[var(--color-text-muted)]">
-                              {Math.round(spVal)}%
-                            </span>
-                          )}
-                        </div>
+                        <p
+                          className="text-center mb-0"
+                          style={{
+                            fontSize: "10px",
+                            color: "var(--color-text-muted)",
+                          }}
+                        >
+                          {label}
+                        </p>
                       </div>
-                      <p className="text-[10px] text-center text-[var(--color-text-muted)]">
-                        {label}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
 
-              <div className="mt-4 flex items-center justify-between text-[10px] text-[var(--color-text-muted)]">
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-[var(--color-primary)]/80" />
-                  <span>Interviews</span>
+                <div
+                  className="mt-3 d-flex align-items-center justify-content-between"
+                  style={{
+                    fontSize: "10px",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-2">
+                    <span
+                      className="rounded-circle"
+                      style={{
+                        width: "0.75rem",
+                        height: "0.75rem",
+                        backgroundColor: "var(--color-primary)",
+                      }}
+                    />
+                    <span>Interviews</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <span
+                      className="rounded-circle"
+                      style={{
+                        width: "0.75rem",
+                        height: "0.75rem",
+                        backgroundColor: "rgba(59,130,246,0.8)",
+                      }}
+                    />
+                    <span>Speeches</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-blue-500/80" />
-                  <span>Speeches</span>
-                </div>
-              </div>
-            </>
-          )}
-        </motion.div>
+              </>
+            )}
+          </motion.div>
+        </div>
 
         {/* Skills card */}
-        <motion.div
-          whileHover={{
-            boxShadow: "0 0 20px rgba(75,108,183,0.25)",
-            borderColor: "#4b6cb7",
-          }}
-          className="rounded-xl border bg-[var(--color-bg-panel)] p-5 transition-all"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Star size={18} className="text-yellow-400" />
-            <h2 className="font-semibold text-[var(--color-text-main)] text-sm">
-              Strengths Snapshot
-            </h2>
-          </div>
-
-          {topFive.length === 0 ? (
-            <p className="text-sm text-[var(--color-text-muted)]">
-              Complete interviews to see your earned skills here.
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {topFive.map((skill) => (
-                <div
-                  key={skill.name}
-                  className="px-3 py-1.5 rounded-full border border-[var(--color-primary)]/25 bg-[var(--color-primary)]/10 flex items-center gap-2"
-                >
-                  <span className="text-xs font-medium text-[var(--color-primary)]">
-                    {skill.name}
-                  </span>
-                  <span className="text-[10px] text-[var(--color-text-muted)]">
-                    {skill.count}
-                  </span>
-                </div>
-              ))}
-
-              {/* More badge */}
-              {remainingCount > 0 && (
-                <div className="px-3 py-1.5 rounded-full border border-[var(--color-primary)]/10 bg-black/10 text-[var(--color-text-muted)] text-xs">
-                  +{remainingCount} more
-                </div>
-              )}
+        <div className="col-12 col-lg-4">
+          <motion.div
+            whileHover={{
+              boxShadow: "0 0 20px rgba(75,108,183,0.25)",
+              borderColor: "#4b6cb7",
+            }}
+            className="h-100 rounded-3 p-4 border"
+            style={{
+              backgroundColor: "var(--color-bg-panel)",
+              borderColor: "var(--color-border)",
+            }}
+          >
+            <div className="d-flex align-items-center gap-2 mb-3">
+              <Star size={18} style={{ color: "#facc15" }} />
+              <h2
+                className="h6 mb-0 fw-semibold"
+                style={{ color: "var(--color-text-main)" }}
+              >
+                Strengths Snapshot
+              </h2>
             </div>
-          )}
-        </motion.div>
+
+            {topFive.length === 0 ? (
+              <p
+                className="small mb-0"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                Complete interviews to see your earned skills here.
+              </p>
+            ) : (
+              <div className="d-flex flex-wrap gap-2">
+                {topFive.map((skill) => (
+                  <div
+                    key={skill.name}
+                    className="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill border"
+                    style={{
+                      borderColor: "rgba(243,146,40,0.25)",
+                      backgroundColor: "rgba(243,146,40,0.1)",
+                    }}
+                  >
+                    <span
+                      className="fw-medium"
+                      style={{
+                        fontSize: "12px",
+                        color: "var(--color-primary)",
+                      }}
+                    >
+                      {skill.name}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      {skill.count}
+                    </span>
+                  </div>
+                ))}
+
+                {remainingCount > 0 && (
+                  <div
+                    className="px-3 py-1 rounded-pill border"
+                    style={{
+                      fontSize: "12px",
+                      borderColor: "rgba(243,146,40,0.1)",
+                      backgroundColor: "rgba(0,0,0,0.1)",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    +{remainingCount} more
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </div>
       </div>
 
       {/* ===== Recent Activity ===== */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-[var(--color-text-main)] flex items-center gap-2">
-            <Clock size={16} className="text-[var(--color-primary)]" />
+      <div>
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <h2
+            className="h6 mb-0 fw-semibold d-flex align-items-center gap-2"
+            style={{ color: "var(--color-text-main)" }}
+          >
+            <Clock size={16} style={{ color: "var(--color-primary)" }} />
             Recent Activity
           </h2>
           <button
+            type="button"
             onClick={() => navigate("/reports")}
-            className="flex items-center gap-1 text-[11px] text-[var(--color-primary)] hover:underline"
+            className="btn btn-link p-0 d-flex align-items-center gap-1 text-decoration-none"
+            style={{ fontSize: "11px", color: "var(--color-primary)" }}
           >
             View full report
             <ArrowRight size={12} />
@@ -390,71 +569,105 @@ export default function DashboardPage() {
         </div>
 
         {recentCards.length === 0 ? (
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p
+            className="small mb-0"
+            style={{ color: "var(--color-text-muted)" }}
+          >
             No recent sessions yet.
           </p>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="row g-3">
             {recentCards.map((item) => (
-              <motion.div
-                key={item.id}
-                whileHover={{
-                  scale: 1.03,
-                  borderColor:
+              <div key={item.id} className="col-12 col-sm-6 col-lg-3">
+                <motion.div
+                  whileHover={{
+                    scale: 1.03,
+                    borderColor:
+                      item.type === "interview"
+                        ? "#f39228"
+                        : "rgba(59,130,246,0.8)",
+                    boxShadow:
+                      item.type === "interview"
+                        ? "0 0 16px rgba(243,146,40,0.3)"
+                        : "0 0 16px rgba(59,130,246,0.3)",
+                  }}
+                  onClick={() =>
                     item.type === "interview"
-                      ? "#f39228"
-                      : "rgba(59,130,246,0.8)",
-                  boxShadow:
-                    item.type === "interview"
-                      ? "0 0 16px rgba(243,146,40,0.3)"
-                      : "0 0 16px rgba(59,130,246,0.3)",
-                }}
-                onClick={() =>
-                  item.type === "interview"
-                    ? navigate(`/evaluation/${item.id}`)
-                    : navigate(`/speech/${item.id}`)
-                }
-                className="p-4 rounded-lg border bg-[var(--color-bg-panel)] cursor-pointer transition-all"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] uppercase tracking-wide text-[var(--color-text-muted)] flex items-center gap-1">
-                    {item.type === "interview" ? (
-                      <>
-                        <BarChart3 size={12} /> Interview
-                      </>
-                    ) : (
-                      <>
-                        <Mic size={12} /> Speech
-                      </>
-                    )}
-                  </span>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full ${statusBadge(
-                      item.status
-                    )}`}
+                      ? navigate(`/evaluation/${item.id}`)
+                      : navigate(`/speech/${item.id}`)
+                  }
+                  className="h-100 p-3 rounded-3 border"
+                  style={{
+                    backgroundColor: "var(--color-bg-panel)",
+                    borderColor: "var(--color-border)",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div className="d-flex align-items-center justify-content-between mb-1">
+                    <span
+                      className="text-uppercase d-flex align-items-center gap-1"
+                      style={{
+                        fontSize: "10px",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      {item.type === "interview" ? (
+                        <>
+                          <BarChart3 size={12} /> Interview
+                        </>
+                      ) : (
+                        <>
+                          <Mic size={12} /> Speech
+                        </>
+                      )}
+                    </span>
+                    <span className={statusBadge(item.status)}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <p
+                    className="mb-0 fw-semibold"
+                    style={{
+                      fontSize: "14px",
+                      color: "var(--color-text-main)",
+                    }}
                   >
-                    {item.status}
-                  </span>
-                </div>
-                <p className="text-sm font-semibold text-[var(--color-text-main)] line-clamp-2">
-                  {item.title}
-                </p>
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-1">
-                  {fmtDate(item.date)}{" "}
-                  {item.difficulty
-                    ? `• ${String(item.difficulty).toUpperCase()}`
-                    : null}
-                </p>
-                <div className="flex items-center justify-between mt-3 text-[11px] text-[var(--color-text-muted)]">
-                  <span>
-                    Score:{" "}
-                    {typeof item.score === "number" ? `${item.score}%` : "N/A"}
-                  </span>
-                  <span className="flex items-center gap-1 text-[var(--color-primary)]">
-                    View details <ArrowRight size={12} />
-                  </span>
-                </div>
-              </motion.div>
+                    {item.title}
+                  </p>
+                  <p
+                    className="mt-1 mb-0"
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    {fmtDate(item.date)}{" "}
+                    {item.difficulty
+                      ? `• ${String(item.difficulty).toUpperCase()}`
+                      : null}
+                  </p>
+                  <div
+                    className="d-flex align-items-center justify-content-between mt-3"
+                    style={{
+                      fontSize: "11px",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    <span>
+                      Score:{" "}
+                      {typeof item.score === "number"
+                        ? `${item.score}%`
+                        : "N/A"}
+                    </span>
+                    <span
+                      className="d-flex align-items-center gap-1"
+                      style={{ color: "var(--color-primary)" }}
+                    >
+                      View details <ArrowRight size={12} />
+                    </span>
+                  </div>
+                </motion.div>
+              </div>
             ))}
           </div>
         )}

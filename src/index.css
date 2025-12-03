@@ -1,36 +1,38 @@
 @import "tailwindcss";
 
-/* ---------- THEME VARIABLES ---------- */
+/* ---------- THEME VARIABLES (LIGHT) ---------- */
 @theme {
   /* LIGHT MODE */
-  --color-bg-body: #f8f9fb;          /* Page background */
-  --color-bg-panel: #ffffff;         /* Card/panel background */
-  --color-bg-sidebar: #ffffff;       /* Sidebar background */
-  --color-text-main: #0f0f0f;        /* Main text color */
-  --color-text-muted: #666d92;       /* Secondary text */
+  --color-bg-body: #f8f9fb; /* Page background */
+  --color-bg-panel: #ffffff; /* Card/panel background */
+  --color-bg-sidebar: #ffffff; /* Sidebar background */
+  --color-text-main: #0f0f0f; /* Main text color */
+  --color-text-muted: #666d92; /* Secondary text */
   --color-border: #e3e6ef;
 
   /* Brand colors */
-  --color-primary: #8231D3;
-  --color-secondary: #5840FF;
-  --color-success: #01B81A;
-  --color-info: #00AAFF;
-  --color-warning: #FA8B0C;
-  --color-danger: #FF0F0F;
+  --color-primary: #8231d3;
+  --color-secondary: #5840ff;
+  --color-success: #01b81a;
+  --color-info: #00aaff;
+  --color-warning: #fa8b0c;
+  --color-danger: #ff0f0f;
 }
 
 /* ---------- DARK MODE OVERRIDES ---------- */
+/* The ThemeProvider adds 'dark' class on <html> */
 :root.dark {
   --color-bg-body: #010413;
-  --color-bg-panel: #1E1E2D;
-  --color-bg-sidebar: #1E1E2D;
+  --color-bg-panel: #1e1e2d;
+  --color-bg-sidebar: #1e1e2d;
   --color-text-main: #e4e4e4;
   --color-text-muted: #b5b5b5;
-  --color-border: #2C2C3A;
+  --color-border: #2c2c3a;
 }
 
 /* ---------- GLOBAL BODY STYLES ---------- */
-body {
+/* assuming <body class="selfmock-dashboard"> in index.html */
+body.selfmock-dashboard {
   @apply font-sans transition-colors duration-300;
   background-color: var(--color-bg-body);
   color: var(--color-text-main);

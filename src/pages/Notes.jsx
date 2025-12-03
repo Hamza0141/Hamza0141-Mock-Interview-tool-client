@@ -1,3 +1,4 @@
+// src/pages/Notes.jsx
 import { useState, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchNotes, addNote, deleteNote } from "../features/notes/noteSlice";
@@ -13,93 +14,182 @@ export default function Notes() {
     dispatch(fetchNotes());
   }, [dispatch]);
 
-const handleAdd = async (note) => {
-  try {
-    const action = await dispatch(addNote(note));
+  const handleAdd = async (note) => {
+    try {
+      const action = await dispatch(addNote(note));
 
-    if (addNote.fulfilled.match(action)) {
-      // ✅ close modal
-      setShowModal(false);
-      // ✅ immediately fetch new notes to refresh the list
-      await dispatch(fetchNotes());
-    } else {
-      console.error("Add note failed:", action.payload);
+      if (addNote.fulfilled.match(action)) {
+        setShowModal(false);
+        await dispatch(fetchNotes());
+      } else {
+        console.error("Add note failed:", action.payload);
+      }
+    } catch (error) {
+      console.error("Error adding note:", error);
     }
-  } catch (error) {
-    console.error("Error adding note:", error);
-  }
-};
-
+  };
 
   const handleDelete = async (id) => {
     await dispatch(deleteNote(id));
   };
 
-  const getLabelColor = (label) => {
+  // return style object for the card background / text
+  const getLabelStyle = (label) => {
     switch (label) {
       case "Work":
-        return "bg-green-100/40 text-green-600";
+        return {
+          backgroundColor: "rgba(187, 247, 208, 0.4)", // green-100/40
+          color: "#16a34a", // green-600
+        };
       case "Social":
-        return "bg-orange-100/40 text-orange-600";
+        return {
+          backgroundColor: "rgba(254, 215, 170, 0.4)", // orange-100/40
+          color: "#ea580c", // orange-600
+        };
       case "Important":
-        return "bg-red-100/40 text-red-600";
+        return {
+          backgroundColor: "rgba(254, 202, 202, 0.4)", // red-100/40
+          color: "#dc2626", // red-600
+        };
       default:
-        return "bg-blue-100/40 text-blue-600";
+        return {
+          backgroundColor: "rgba(191, 219, 254, 0.4)", // blue-100/40
+          color: "#2563eb", // blue-600
+        };
     }
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-[var(--color-text-main)]">
+    <div
+      className="container"
+      style={{
+        maxWidth: "72rem",
+        padding: "1.5rem",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="d-flex justify-content-between align-items-center mb-4"
+        style={{ gap: "0.75rem" }}
+      >
+        <h1
+          className="mb-0"
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: 600,
+            color: "var(--color-text-main)",
+          }}
+        >
           Notes
         </h1>
+
         <button
+          type="button"
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium shadow hover:opacity-90"
+          className="btn btn-primary"
+          style={{
+            backgroundColor: "var(--color-primary)",
+            borderColor: "var(--color-primary)",
+            fontWeight: 500,
+            borderRadius: "0.5rem",
+            padding: "0.5rem 1rem",
+            borderRadius: "0.6rem",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+          }}
         >
           + Add Note
         </button>
       </div>
 
-      {/* Notes Grid */}
+      {/* Notes Grid / States */}
       {status === "loading" ? (
-        <p>Loading notes...</p>
+        <p
+          style={{
+            fontSize: "0.9rem",
+            color: "var(--color-text-muted)",
+          }}
+        >
+          Loading notes...
+        </p>
       ) : list?.length === 0 ? (
-        <p className="text-xs mt-3 block opacity-60">No notes yet. Add one!</p>
+        <p
+          style={{
+            fontSize: "0.75rem",
+            marginTop: "0.75rem",
+            opacity: 0.6,
+          }}
+        >
+          No notes yet. Add one!
+        </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {list?.map((note) => (
-            <div
-              key={note.note_id}
-              className={`p-4 rounded-xl shadow border border-[var(--color-border)] ${getLabelColor(
-                note?.note_label
-              )}`}
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg">{note.note_title}</h3>
-                <button
-                  onClick={() => handleDelete(note.note_id)}
-                  className="text-red-500 hover:text-red-600"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <p
-                className="text-sm mt-2 break-words"
-                style={{
-                  color: "var(--color-text-main)", // ✅ adapts to theme
-                  overflowWrap: "break-word", // ✅ breaks long unspaced text
-                  wordBreak: "break-word",
-                }}
+        <div className="row g-3">
+          {list?.map((note) => {
+            const labelStyle = getLabelStyle(note?.note_label);
+
+            return (
+              <div
+                key={note.note_id}
+                className="col-12 col-sm-6 col-lg-4 col-xl-3"
               >
-                {note?.note_text}
-              </p>
-              <span className="text-xs mt-3 block opacity-60">
-                {note?.note_label}
-              </span>
-            </div>
-          ))}
+                <div
+                  className="h-100 border shadow-sm rounded-4 d-flex flex-column"
+                  style={{
+                    padding: "1rem",
+                    borderColor: "var(--color-border)",
+                    backgroundColor: labelStyle.backgroundColor,
+                    color: labelStyle.color,
+                  }}
+                >
+                  <div className="d-flex justify-content-between align-items-start">
+                    <h3
+                      className="mb-0"
+                      style={{
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        color: "var(--color-text-main)",
+                      }}
+                    >
+                      {note.note_title}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(note.note_id)}
+                      className="btn btn-link p-0 ms-2"
+                      style={{
+                        color: "#ef4444",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+
+                  <p
+                    className="mt-2 mb-1"
+                    style={{
+                      fontSize: "0.9rem",
+                      color: "var(--color-text-main)",
+                      overflowWrap: "break-word",
+                      wordBreak: "break-word",
+                      flexGrow: 1,
+                    }}
+                  >
+                    {note?.note_text}
+                  </p>
+
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      marginTop: "0.5rem",
+                      opacity: 0.6,
+                    }}
+                  >
+                    {note?.note_label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
