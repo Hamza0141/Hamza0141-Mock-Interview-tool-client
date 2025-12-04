@@ -75,15 +75,17 @@ const FooterTopInfo = () => {
                       <span id="tooltip" style={tooltipStyle}></span>
                     </div>
                   </div>
+
                   <div className="col-lg-6">
                     <div className="content ft-shape">
                       <div className="logo">
-                        <h2>MeetAI</h2>
+                        <h2>Prepare With AI</h2>
                       </div>
                       <p>
-                        Aithm is poised to revolutionize the way we live and
-                        work, offering unprecedented possibilities for
-                        innovation and efficiency.
+                        Prepare With AI helps you master interviews and public
+                        speaking with realistic AI simulations. Practice
+                        anytime, receive instant feedback, and build the
+                        confidence you need to perform at your best.
                       </p>
                       <ul>
                         <li>
@@ -92,7 +94,7 @@ const FooterTopInfo = () => {
                           </Link>
                         </li>
                         <li>
-                          <Link to="#/">
+                          <Link to="#">
                             <i className="bx bxl-instagram" />
                           </Link>
                         </li>

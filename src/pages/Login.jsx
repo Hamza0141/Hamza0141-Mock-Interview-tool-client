@@ -17,13 +17,16 @@ export default function Login() {
 
   const [mode, setMode] = useState("login"); // "login" | "verifyEmail" | "resetPassword"
 
-  // email verification flow
+  // ===== Email verification flow =====
   const [verifyOtp, setVerifyOtp] = useState("");
-  const [verifyStatus, setVerifyStatus] = useState("idle");
+  const [verifyStatus, setVerifyStatus] = useState("idle"); // "idle" | "loading"
   const [verifyMsg, setVerifyMsg] = useState("");
-  const [canResendVerify, setCanResendVerify] = useState(true);
+  const [hasSentVerifyOtp, setHasSentVerifyOtp] = useState(false);
 
-  // password reset flow
+  const [verifyCooldown, setVerifyCooldown] = useState(0); // seconds
+  const [verifyLoading, setVerifyLoading] = useState(false);
+
+  // ===== Password reset flow =====
   const [resetEmail, setResetEmail] = useState("");
   const [resetOtp, setResetOtp] = useState("");
   const [resetPassword, setResetPassword] = useState("");
@@ -33,6 +36,9 @@ export default function Login() {
   const [resetStep, setResetStep] = useState(1);
   const [canResendReset, setCanResendReset] = useState(true);
 
+  // ===== Effects =====
+
+  // Redirect after login
   useEffect(() => {
     if (isAuthenticated) {
       setFeedback({
@@ -45,6 +51,7 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Handle login error (e.g. unverified email)
   useEffect(() => {
     if (error && status === "failed") {
       setFeedback({
@@ -57,6 +64,17 @@ export default function Login() {
       }
     }
   }, [error, status]);
+
+  // Verify OTP cooldown timer
+  useEffect(() => {
+    if (!verifyCooldown) return;
+    const timer = setInterval(() => {
+      setVerifyCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [verifyCooldown]);
+
+  // ===== Handlers =====
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -85,43 +103,49 @@ export default function Login() {
     }
   };
 
-  // ---- Email activation helpers ----
+  // ---- Email activation: send OTP ----
   const handleSendActivationOtp = async () => {
     setVerifyMsg("");
+
     if (!form.user_email) {
-      setVerifyMsg("⚠️ Please enter your email in the login form first.");
+      setVerifyMsg("Please enter your email in the login form first.");
       return;
     }
 
-    if (!canResendVerify) return;
+    if (verifyLoading || verifyCooldown > 0) return;
 
     try {
+      setVerifyLoading(true);
       setVerifyStatus("loading");
-      setCanResendVerify(false);
 
       const res = await axiosClient.post("/user/sendOTP", {
         user_email: form.user_email,
       });
 
-      setVerifyMsg(res.data?.message || "✅ Verification code sent.");
-      setTimeout(() => setCanResendVerify(true), 30000);
+      setVerifyMsg(
+        res.data?.message || "Verification code sent to your email."
+      );
+      setHasSentVerifyOtp(true);
+      setVerifyCooldown(60); // 60s cooldown
     } catch (err) {
       setVerifyMsg(
         err?.response?.data?.message ||
           err.message ||
-          "❌ Failed to send verification code."
+          "Failed to send verification code."
       );
     } finally {
+      setVerifyLoading(false);
       setVerifyStatus("idle");
     }
   };
 
+  // ---- Email activation: verify OTP ----
   const handleVerifyActivationCode = async (e) => {
     e.preventDefault();
     setVerifyMsg("");
 
     if (!form.user_email || !verifyOtp.trim()) {
-      setVerifyMsg("⚠️ Email and code are required.");
+      setVerifyMsg("Email and code are required.");
       return;
     }
 
@@ -133,9 +157,7 @@ export default function Login() {
         otp: verifyOtp.trim(),
       });
 
-      setVerifyMsg(
-        res.data?.message || "✅ Email verified! You can log in now."
-      );
+      setVerifyMsg(res.data?.message || "Email verified! You can log in now.");
       setVerifyOtp("");
 
       setTimeout(() => {
@@ -150,7 +172,7 @@ export default function Login() {
       setVerifyMsg(
         err?.response?.data?.message ||
           err.message ||
-          "❌ Verification failed. Please check your code."
+          "Verification failed. Please check your code."
       );
     } finally {
       setVerifyStatus("idle");
@@ -169,10 +191,10 @@ export default function Login() {
   const handleSendResetOtp = async () => {
     setResetMsg("");
     if (!resetEmail) {
-      setResetMsg("⚠️ Please enter your email.");
+      setResetMsg("Please enter your email.");
       return;
     }
-    if (!canResendReset) return;
+    if (!canResendReset || resetStatus === "loading") return;
 
     try {
       setResetStatus("loading");
@@ -182,14 +204,16 @@ export default function Login() {
         user_email: resetEmail,
       });
 
-      setResetMsg(res.data?.message || "✅ Reset code sent to your email.");
+      const msg = res.data?.message || "Reset code sent to your email.";
+      setResetMsg(msg);
       setResetStep(2);
+
       setTimeout(() => setCanResendReset(true), 30000);
     } catch (err) {
       setResetMsg(
         err?.response?.data?.message ||
           err.message ||
-          "❌ Failed to send reset code."
+          "Failed to send reset code."
       );
     } finally {
       setResetStatus("idle");
@@ -201,12 +225,12 @@ export default function Login() {
     setResetMsg("");
 
     if (!resetEmail || !resetOtp || !resetPassword || !resetPassword2) {
-      setResetMsg("⚠️ Please fill in all fields.");
+      setResetMsg("Please fill in all fields.");
       return;
     }
 
     if (resetPassword !== resetPassword2) {
-      setResetMsg("❌ Passwords do not match.");
+      setResetMsg("Passwords do not match.");
       return;
     }
 
@@ -220,7 +244,9 @@ export default function Login() {
         confirm_password: resetPassword2,
       });
 
-      setResetMsg(res.data?.message || "✅ Password reset successfully.");
+      setResetMsg(
+        res.data?.message || "Password reset successfully. You can login now."
+      );
 
       setTimeout(() => {
         setMode("login");
@@ -234,17 +260,18 @@ export default function Login() {
       setResetMsg(
         err?.response?.data?.message ||
           err.message ||
-          "❌ Failed to reset password."
+          "Failed to reset password. Please check your code."
       );
     } finally {
       setResetStatus("idle");
     }
   };
 
+  // ===== RENDER =====
   return (
     <div
       className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: "#05051E" }} // 🔹 fixed dark background
+      style={{ backgroundColor: "#05051E" }}
     >
       <div
         className="w-full max-w-md p-8 rounded-xl shadow-md border"
@@ -313,11 +340,14 @@ export default function Login() {
 
               {feedback.text && (
                 <p
-                  className={`text-sm mt-2 p-2 rounded-md text-center ${
-                    feedback.type === "error"
-                      ? "text-red-500 bg-red-100/10"
-                      : "text-green-500 bg-green-100/10"
-                  }`}
+                  className="text-sm mt-2 p-2 rounded-md text-center"
+                  style={{
+                    color: feedback.type === "error" ? "#ef4444" : "#22c55e", // red / green text
+                    backgroundColor:
+                      feedback.type === "error"
+                        ? "rgba(239, 68, 68, 0.12)"
+                        : "rgba(34, 197, 94, 0.12)", // light green bg
+                  }}
                 >
                   {feedback.text}
                 </p>
@@ -331,6 +361,7 @@ export default function Login() {
                   backgroundColor: "var(--color-primary)",
                   color: "#fff",
                   opacity: status === "loading" ? 0.7 : 1,
+                  borderRadius: "0.45rem",
                 }}
               >
                 {status === "loading" ? "Signing in..." : "Login"}
@@ -372,71 +403,103 @@ export default function Login() {
               to activate your account.
             </p>
 
+            {/* SEND / RESEND BUTTON (always visible) */}
             <button
               type="button"
               onClick={handleSendActivationOtp}
-              disabled={verifyStatus === "loading" || !canResendVerify}
-              className="w-full py-2 font-medium rounded-md mb-2 transition bg-[var(--color-primary)] text-white disabled:opacity-60"
+              disabled={verifyLoading || verifyCooldown > 0}
+              className="w-full py-2 font-medium rounded-md mb-2 transition text-white disabled:opacity-60"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                borderRadius: "0.45rem",
+              }}
             >
-              {verifyStatus === "loading"
+              {verifyLoading
                 ? "Sending code..."
-                : canResendVerify
-                ? "Send verification code"
-                : "Please wait..."}
+                : verifyCooldown > 0
+                ? `Resend in ${verifyCooldown}s`
+                : hasSentVerifyOtp
+                ? "Resend verification code"
+                : "Send verification code"}
             </button>
 
-            <form onSubmit={handleVerifyActivationCode} className="space-y-3">
-              <div>
-                <label className="block text-sm mb-1 text-[var(--color-text-main)]">
-                  Verification Code
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={verifyOtp}
-                  onChange={(e) => setVerifyOtp(e.target.value)}
-                  className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  style={{
-                    backgroundColor: "var(--color-bg-body)",
-                    borderColor: "var(--color-border)",
-                    color: "var(--color-text-main)",
-                  }}
-                  placeholder="Enter the 6-digit code"
-                />
-              </div>
+            {/* Only show OTP input AFTER user clicked send */}
+            {hasSentVerifyOtp && (
+              <form onSubmit={handleVerifyActivationCode} className="space-y-3">
+                <div>
+                  <label className="block text-sm mb-1 text-[var(--color-text-main)]">
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={verifyOtp}
+                    onChange={(e) => setVerifyOtp(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md border text-center tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    style={{
+                      backgroundColor: "var(--color-bg-body)",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                    placeholder="••••••"
+                  />
+                  <div className="flex justify-end mt-1 text-xs">
+                    {/* <button
+                      type="button"
+                      onClick={handleSendActivationOtp}
+                      disabled={verifyLoading || verifyCooldown > 0}
+                      className="text-[var(--color-primary)] hover:underline disabled:opacity-60"
+                    >
+                      {verifyLoading
+                        ? "Sending..."
+                        : verifyCooldown > 0
+                        ? `Resend in ${verifyCooldown}s`
+                        : "Resend code"}
+                    </button> */}
+                  </div>
+                </div>
 
-              {verifyMsg && (
-                <p
-                  className={`text-sm p-2 rounded-md text-center ${
-                    verifyMsg.startsWith("✅")
-                      ? "text-green-500 bg-green-100/10"
-                      : verifyMsg.startsWith("⚠️")
-                      ? "text-yellow-500 bg-yellow-100/10"
-                      : "text-red-500 bg-red-100/10"
-                  }`}
-                >
-                  {verifyMsg}
-                </p>
-              )}
+                {verifyMsg && (
+                  <p
+                    className="text-sm p-2 rounded-md text-center"
+                    style={{
+                      color: /success|verified|sent/i.test(verifyMsg)
+                        ? "#22c55e" // green text
+                        : "#ef4444", // red text
+                      backgroundColor: /success|verified|sent/i.test(verifyMsg)
+                        ? "rgba(34, 197, 94, 0.12)" // light green bg
+                        : "rgba(239, 68, 68, 0.12)", // light red bg
+                    }}
+                  >
+                    {verifyMsg}
+                  </p>
+                )}
 
-              <div className="flex justify-between items-center gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setMode("login")}
-                  className="text-[var(--color-text-muted)] hover:underline"
-                >
-                  ← Back to login
-                </button>
-                <button
-                  type="submit"
-                  disabled={verifyStatus === "loading"}
-                  className="px-4 py-2 rounded-md bg-[var(--color-primary)] text-white font-medium disabled:opacity-60"
-                >
-                  {verifyStatus === "loading" ? "Verifying..." : "Verify email"}
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-between items-center gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setMode("login")}
+                    className="text-[var(--color-text-muted)] hover:underline"
+                  >
+                    ← Back to login
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={verifyStatus === "loading"}
+                    className="px-4 py-2 rounded-md text-white font-medium disabled:opacity-60"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      borderRadius: "0.45rem",
+                    }}
+                  >
+                    {verifyStatus === "loading"
+                      ? "Verifying..."
+                      : "Verify code"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         )}
 
@@ -462,6 +525,7 @@ export default function Login() {
                       backgroundColor: "var(--color-bg-body)",
                       borderColor: "var(--color-border)",
                       color: "var(--color-text-main)",
+                      borderRadius: "0.85rem",
                     }}
                   />
                 </div>
@@ -469,13 +533,17 @@ export default function Login() {
                   type="button"
                   onClick={handleSendResetOtp}
                   disabled={resetStatus === "loading" || !canResendReset}
-                  className="w-full py-2 font-medium rounded-md transition bg-[var(--color-primary)] text-white disabled:opacity-60"
+                  className="w-full py-2 font-medium rounded-md transition text-white disabled:opacity-60"
+                  style={{
+                    backgroundColor: "var(--color-primary)",
+                    borderRadius: "0.85rem",
+                  }}
                 >
                   {resetStatus === "loading"
                     ? "Sending code..."
                     : canResendReset
                     ? "Send reset code"
-                    : "Please wait..."}
+                    : "OTP sent"}
                 </button>
               </>
             )}
@@ -492,7 +560,7 @@ export default function Login() {
                     maxLength={6}
                     value={resetOtp}
                     onChange={(e) => setResetOtp(e.target.value)}
-                    className="w-full px-4 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    className="w-full px-4 py-2 rounded-md border text-center focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                     style={{
                       backgroundColor: "var(--color-bg-body)",
                       borderColor: "var(--color-border)",
@@ -500,6 +568,20 @@ export default function Login() {
                     }}
                     placeholder="Enter the code sent to your email"
                   />
+                  <div className="flex justify-end mt-1 text-xs">
+                    <button
+                      type="button"
+                      onClick={handleSendResetOtp}
+                      disabled={resetStatus === "loading" || !canResendReset}
+                      className="text-[var(--color-primary)] hover:underline disabled:opacity-60"
+                    >
+                      {resetStatus === "loading"
+                        ? "Sending..."
+                        : canResendReset
+                        ? "Resend code"
+                        : "OTP sent"}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2">
@@ -551,7 +633,11 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={resetStatus === "loading"}
-                    className="px-4 py-2 rounded-md bg-[var(--color-primary)] text-white font-medium disabled:opacity-60"
+                    className="px-4 py-2 rounded-md text-white font-medium disabled:opacity-60"
+                    style={{
+                      backgroundColor: "var(--color-primary)",
+                      borderRadius: "0.85rem",
+                    }}
                   >
                     {resetStatus === "loading"
                       ? "Resetting..."
@@ -563,13 +649,15 @@ export default function Login() {
 
             {resetMsg && (
               <p
-                className={`text-sm mt-2 p-2 rounded-md text-center ${
-                  resetMsg.startsWith("✅")
-                    ? "text-green-500 bg-green-100/10"
-                    : resetMsg.startsWith("⚠️")
-                    ? "text-yellow-500 bg-yellow-100/10"
-                    : "text-red-500 bg-red-100/10"
-                }`}
+                className="text-sm mt-2 p-2 rounded-md text-center"
+                style={{
+                  color: /success|verified|sent/i.test(resetMsg)
+                    ? "#22c55e"
+                    : "#ef4444",
+                  backgroundColor: /success|verified|sent/i.test(resetMsg)
+                    ? "rgba(34, 197, 94, 0.12)"
+                    : "rgba(239, 68, 68, 0.12)",
+                }}
               >
                 {resetMsg}
               </p>

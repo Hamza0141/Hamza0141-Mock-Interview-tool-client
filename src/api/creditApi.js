@@ -13,3 +13,10 @@ export async function createPaymentIntent({ profile_id, pack_id }) {
   });
   return res.data; // { success, clientSecret, ... }
 }
+
+export async function fetchTransactionStatus(paymentIntentId) {
+  const res = await axiosClient.get(
+    `/user/credits/transaction-status/${paymentIntentId}`
+  );
+  return res.data; // { success, status }
+}

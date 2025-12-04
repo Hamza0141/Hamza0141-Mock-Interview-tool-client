@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { getUserById, updateUserInfo } from "../features/user/userSlice";
 import userApi from "../api/userApi";
 import axiosClient from "../api/axiosClient";
+import { fetchNotifications } from "../features/notifications/notificationsSlice";
 
 export default function Profile() {
   const dispatch = useAppDispatch();
@@ -188,6 +189,7 @@ export default function Profile() {
       setForm(updated);
       localStorage.setItem("user_data", JSON.stringify(updated));
       dispatch(getUserById());
+      dispatch(fetchNotifications())
 
       setShareMsg(
         `✅ ${res.data?.message || "Credit transferred successfully!"}`

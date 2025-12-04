@@ -32,7 +32,7 @@ export default function Sidebar({ collapsed }) {
       // { id: "speech", label: "Speech Practice", icon: <Mic size={18} /> },
       { id: "reports", label: "Results", icon: <BarChart3 size={18} /> },
       { id: "profile", label: "Profile", icon: <User size={18} /> },
-      { id: "pricing", label: "Pricing", icon: <UilUsdCircle size={18} /> },
+      { id: "buy-credits", label: "Credit", icon: <UilUsdCircle size={18} /> },
       { id: "notes", label: "Notes", icon: <UilWindowSection size={18} /> },
       { id: "notifications", label: "Notifications", icon: <Bell size={18} /> },
       { id: "tickets", label: "Support Tickets", icon: <Ticket size={18} /> },
