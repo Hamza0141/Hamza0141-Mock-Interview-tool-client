@@ -8,11 +8,11 @@ import React from 'react'
 const Pricing = () => {
     return (
         <>
-            <PageHeader
+            {/* <PageHeader
                 className={"sbg-8"}
                 currentPage={"Pricing Plan"}
                 title={"Pricing Plan"}
-            />
+            /> */}
             <PriceTwo/>
             <TestimonialOne/>
         </>

@@ -6,11 +6,11 @@ import React from 'react'
 const Contact = () => {
     return (
         <>
-            <PageHeader
+            {/* <PageHeader
                 className={"sbg-9"}
                 currentPage={"Contact Us"}
                 title={"Contact Us"}
-            />
+            /> */}
             <ContactAddress />
             <ContactForm />
             <div id="map" className="map-pd container-fluid">

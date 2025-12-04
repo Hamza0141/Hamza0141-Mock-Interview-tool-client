@@ -3611,7 +3611,7 @@ Service Area CSS
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  background-image: url(../img/banner/section-bg-7.png);
+  background-image: url(../img/banner/background-main.png);
 }
 
 .work-section {
@@ -3775,9 +3775,10 @@ Section Banner Area CSS
 .sbg-1 {
   background-image: url(../img/banner/section-bg-1.png);
 }
+/* service banner */
 
 .sbg-2 {
-  background-image: url(../img/banner/section-bg-2.png);
+  background-image: url(../img/banner/ft-shape.png);
 }
 
 .sbg-3 {
@@ -3788,8 +3789,9 @@ Section Banner Area CSS
   background-image: url(../img/banner/section-bg-4.png);
 }
 
+/* about banner */
 .sbg-5 {
-  background-image: url(../img/banner/section-bg-5.png);
+  background-image: url(../img/banner/ft-shape.png);
 }
 
 .sbg-6 {
@@ -3800,12 +3802,14 @@ Section Banner Area CSS
   background-image: url(../img/banner/section-bg-7.png);
 }
 
+/* price banner */
 .sbg-8 {
-  background-image: url(../img/banner/section-bg-8.png);
+  background-image: url(../img/banner/ft-shape.png);
 }
 
+/* contact banner */
 .sbg-9 {
-  background-image: url(../img/banner/section-bg-9.png);
+  background-image: url(../img/banner/background-main.png);
 }
 
 .section-banner .banner-content h2 {

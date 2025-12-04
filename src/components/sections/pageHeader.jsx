@@ -8,13 +8,7 @@ const PageHeader = ({className, title, currentPage}) => {
                 <div className="row">
                     <div className="col-lg-12">
                         <div className="banner-content">
-                            <h2>{title}</h2>
-                            <nav style={{"--bs-breadcrumb-divider": "'/'"}} aria-label="breadcrumb">
-                                <ol className="breadcrumb">
-                                    <li className="breadcrumb-item"><Link to="/">Home</Link></li>
-                                    <li className="breadcrumb-item active" aria-current="page">{currentPage}</li>
-                                </ol>
-                            </nav>
+                            
                         </div>
                     </div>
                 </div>

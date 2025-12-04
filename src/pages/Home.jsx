@@ -15,7 +15,7 @@ const Home = () => {
         <Features />
         <AboutOne />
         {/* <Brand className={"pb-100"} /> */}
-        <TeamSlider />
+        {/* <TeamSlider /> */}
         <ImageGallery isTitleShow={true} />
         <TestimonialOne />
         <PriceTwo />

@@ -10,7 +10,7 @@ import RootLayout from "@/layouts/root";
 import TemplateHome from "@/pages/home";
 import About from "@/pages/about";
 import Services from "@/pages/services";
-import Team from "@/pages/team";
+// import Team from "@/pages/team";
 import Faq from "@/pages/faq";
 import PricingTemplate from "@/pages/pricing";
 import NotFound from "@/pages/not-found";
@@ -51,7 +51,7 @@ export default function AppRoutes() {
           <Route path="/" element={<TemplateHome />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/team" element={<Team />} />
+          {/* <Route path="/team" element={<Team />} /> */}
           <Route path="/faq" element={<Faq />} />
           <Route path="/pricing" element={<PricingTemplate />} />
           <Route path="/contact" element={<Contact />} />

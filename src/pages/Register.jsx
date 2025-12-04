@@ -200,7 +200,7 @@ export default function Register() {
                         <Brain size={22} />
                       </div>
                       <div>
-                        <h2 className="h5 mb-0 fw-semibold">SelfMock</h2>
+                        <h2 className="h5 mb-0 fw-semibold">Prepare With AI</h2>
                         <div className="small mb-0 opacity-75">
                           AI Interview & Speech Coach
                         </div>

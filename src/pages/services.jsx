@@ -8,11 +8,11 @@ import React from 'react'
 const Services = () => {
     return (
         <>
-            <PageHeader
+            {/* <PageHeader
                 className={"sbg-2"}
                 currentPage={"Services"}
                 title={"Services"}
-            />
+            /> */}
             <Features/>
             <ContinuousLearning/>
             <WorkProcess order={"order-1"} isLampImgTop={false}/>

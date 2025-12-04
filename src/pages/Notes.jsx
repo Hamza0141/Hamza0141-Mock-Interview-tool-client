@@ -91,7 +91,6 @@ export default function Notes() {
             backgroundColor: "var(--color-primary)",
             borderColor: "var(--color-primary)",
             fontWeight: 500,
-            borderRadius: "0.5rem",
             padding: "0.5rem 1rem",
             borderRadius: "0.6rem",
             boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
