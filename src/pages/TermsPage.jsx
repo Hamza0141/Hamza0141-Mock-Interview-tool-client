@@ -6,11 +6,11 @@ import PageHeader from "@/components/sections/pageHeader";
 const TermsConditions = () => {
   return (
     <>
-      <PageHeader
+      {/* <PageHeader
         className={"sbg-6"}
         currentPage={"Terms & Conditions"}
         title={"Terms & Conditions"}
-      />
+      /> */}
 
       <div className="cookie-section ptb-100">
         <div className="container">

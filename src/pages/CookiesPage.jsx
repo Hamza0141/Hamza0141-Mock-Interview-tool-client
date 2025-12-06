@@ -5,11 +5,11 @@ import { Link } from "react-router-dom";
 const CookiePolicy = () => {
   return (
     <>
-      <PageHeader
+      {/* <PageHeader
         className={"sbg-6"}
         currentPage={"Cookie Policy"}
         title={"Cookie Policy"}
-      />
+      /> */}
       <div className="cookie-section ptb-100">
         <div className="container">
           <div className="row">

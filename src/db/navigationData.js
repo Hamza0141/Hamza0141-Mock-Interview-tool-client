@@ -48,9 +48,9 @@ export const navigationData = [
     href: "/contact",
     hasDropdown: false,
   },
-  {
-    label: "Login/Sign Up",
-    href: "/login",
-    hasDropdown: false,
-  },
+  // Display only if NOT logged in
+  { label: "Login/Sign Up", href: "/login", hasDropdown: false },
+
+  // Display only if logged in
+  { label: "Dashboard", href: "/dashboard", hasDropdown: false },
 ];

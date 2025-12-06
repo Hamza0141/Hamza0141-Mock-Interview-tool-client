@@ -68,12 +68,12 @@ const WorkProcess = ({ order, isLampImgTop }) => {
                   <>
                     <img
                       className="image-box-item"
-                      src="/img/all-img/pricing-image-3.png"
+                      src="/img/AI-Image/about.png"
                       alt="image"
                     />
                     <img
                       className="image-box-item"
-                      src="/img/all-img/pricing-image-2.png"
+                      src="/img/AI-Image/about.png"
                       alt="image"
                     />
                   </>
@@ -81,12 +81,12 @@ const WorkProcess = ({ order, isLampImgTop }) => {
                   <>
                     <img
                       className="image-box-item"
-                      src="/img/all-img/pricing-image-2.png"
+                      src="/img/AI-Image/about.png"
                       alt="image"
                     />
                     <img
                       className="image-box-item"
-                      src="/img/all-img/pricing-image-3.png"
+                      src="/img/AI-Image/about.png"
                       alt="image"
                     />
                   </>

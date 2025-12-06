@@ -6,11 +6,11 @@ import PageHeader from "@/components/sections/pageHeader";
 const PrivacyPolicy = () => {
   return (
     <>
-      <PageHeader
+      {/* <PageHeader
         className={"sbg-6"}
         currentPage={"Privacy Policy"}
         title={"Privacy Policy"}
-      />
+      /> */}
 
       <div className="cookie-section ptb-100">
         <div className="container">
@@ -20,8 +20,8 @@ const PrivacyPolicy = () => {
               <div className="cookie-content">
                 {/* Intro */}
                 <div className="pera-list">
-                  <p className="text-muted">
-                    <i>Last updated: January 2025</i>
+                  <p className="text">
+                    Last updated: January 2025
                   </p>
                   <p>
                     This Privacy Policy explains how <b>Prepare With AI</b>{" "}
@@ -43,7 +43,7 @@ const PrivacyPolicy = () => {
                     and improve the Prepare With AI platform.
                   </p>
 
-                  <h3>1.1 Information You Provide</h3>
+                  <h2>1.1 Information You Provide</h2>
                   <ul className="style-2">
                     <li>First name and last name</li>
                     <li>Email address</li>
@@ -57,7 +57,7 @@ const PrivacyPolicy = () => {
                     </li>
                   </ul>
 
-                  <h3>1.2 Information Collected Automatically</h3>
+                  <h2>1.2 Information Collected Automatically</h2>
                   <ul className="style-2">
                     <li>Basic device and browser information</li>
                     <li>Approximate usage timestamps</li>
@@ -72,7 +72,7 @@ const PrivacyPolicy = () => {
                 <div className="pera-list">
                   <h2>2. Audio, Camera &amp; AI Processing</h2>
 
-                  <h3>2.1 Camera</h3>
+                  <h2>2.1 Camera</h2>
                   <p>
                     Prepare With AI may request access to your camera to
                     simulate a real interview or presentation environment.
@@ -81,7 +81,7 @@ const PrivacyPolicy = () => {
                     session.
                   </p>
 
-                  <h3>2.2 Audio &amp; Transcription</h3>
+                  <h2>2.2 Audio &amp; Transcription</h2>
                   <p>If you choose to answer questions verbally:</p>
                   <ul className="style-2">
                     <li>

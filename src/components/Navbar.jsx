@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { useContext, useEffect, useRef, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
-import { Sun, Moon, Menu, Bell, Search, LogOut } from "lucide-react";
+import { Sun, Moon, Menu, Bell, Search, LogOut,HomeIcon } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../app/hooks";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -341,6 +341,33 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
       {/* Right: theme toggle, notifications, user chip, mobile logout */}
       <div className="d-flex align-items-center gap-2">
         {/* Theme toggle */}
+        <Link to="/">
+          <button
+            type="button"
+            className="btn p-2 rounded-circle border"
+            style={{
+              backgroundColor: "var(--color-bg-body)",
+              color: "var(--color-text-main)",
+              borderColor: "rgba(255,255,255,0.1)",
+              boxShadow: "none",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--color-primary)";
+              e.currentTarget.style.boxShadow = "0 0 10px rgba(243,146,40,0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            {theme === "light" ? (
+              <HomeIcon size={16} />
+            ) : (
+              <HomeIcon size={16} />
+            )}
+          </button>
+        </Link>
+        
         <button
           type="button"
           onClick={toggleTheme}
