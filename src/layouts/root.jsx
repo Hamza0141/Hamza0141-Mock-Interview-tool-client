@@ -10,18 +10,16 @@ import "@/assets/css/header.css";
 import "@/assets/css/style.css";
 import "@/assets/css/responsive.css";
 
-import Header from "@/components/sections/header/header"; // adjust path if different
+import Header from "@/components/sections/header/header"; 
 import Footer from "@/components/sections/footer"; 
-import AddAnimation from "@/components/ui/addAnimation";// adjust path if different
+import AddAnimation from "@/components/ui/addAnimation";
 
-// If the template had a ScrollToTop or similar, you can import/use it here.
 
 const RootLayout = () => {
   const pathName = useLocation().pathname;
   const [themeClass, setThemeClass] = useState("dark-theme");
 
   useEffect(() => {
-    // instead of touching <body>, we keep theme at wrapper level
     if (pathName === "/home-two") {
       setThemeClass("light-theme");
     } else if (pathName === "/home-three") {

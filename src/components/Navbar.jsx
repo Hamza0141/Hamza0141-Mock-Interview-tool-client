@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { useContext, useEffect, useRef, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
-import { Sun, Moon, Menu, Bell, Search } from "lucide-react";
+import { Sun, Moon, Menu, Bell, Search, LogOut } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../app/hooks";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ import {
   fetchNotifications,
   markNotificationRead,
 } from "../features/notifications/notificationsSlice";
+import { logoutUser } from "../features/auth/authSlice";
 
 /* ------------------- NotificationBell ------------------- */
 
@@ -218,6 +219,8 @@ function NotificationBell() {
 export default function Navbar({ collapsed, onToggleSidebar }) {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { user } = useAppSelector((s) => s.user);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
   const imgSrc = user?.profile_url
@@ -228,7 +231,13 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    // later: navigate(`/search?q=${encodeURIComponent(search)}`)
+  };
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    setTimeout(() => {
+      navigate("/login", { replace: true });
+    }, 200);
   };
 
   return (
@@ -253,7 +262,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="btn border-0 p-1 rounded-2 me-1"
+          className="btn border-0 p-1 rounded-2 me-1 d-none d-md-block"
           style={{
             backgroundColor: "transparent",
           }}
@@ -303,7 +312,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
           className="d-flex align-items-center w-100 rounded-pill border shadow-inner"
           style={{
             padding: "0.35rem 0.75rem",
-            backgroundColor: "rgba(15,23,42,0.8)", // similar to bg-body/80 in dark
+            backgroundColor: "rgba(15,23,42,0.8)",
             borderColor: "var(--color-border)",
             columnGap: "0.5rem",
           }}
@@ -329,7 +338,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         </div>
       </form>
 
-      {/* Right: theme toggle, notifications, user chip */}
+      {/* Right: theme toggle, notifications, user chip, mobile logout */}
       <div className="d-flex align-items-center gap-2">
         {/* Theme toggle */}
         <button
@@ -400,6 +409,21 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
             </div>
           </Link>
         )}
+        {/* Mobile logout button (visible only < md) */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="btn btn-sm d-inline-flex d-md-none align-items-center px-2 py-1 rounded-pill"
+          style={{
+            fontSize: "11px",
+            backgroundColor: "transparent",
+            color: "var(--color-text-muted)",
+            border: "1px solid var(--color-border)",
+          }}
+        >
+          <LogOut size={14} className="me-1" />
+          <span>Logout</span>
+        </button>
       </div>
     </header>
   );

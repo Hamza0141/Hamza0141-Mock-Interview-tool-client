@@ -5,6 +5,7 @@ import { getUserById, updateUserInfo } from "../features/user/userSlice";
 import userApi from "../api/userApi";
 import axiosClient from "../api/axiosClient";
 import { fetchNotifications } from "../features/notifications/notificationsSlice";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const dispatch = useAppDispatch();
@@ -41,6 +42,12 @@ export default function Profile() {
   }, [dispatch]);
 
   useEffect(() => {
+    if (user?.profile_id) {
+      dispatch(fetchNotifications());
+    }
+  }, [dispatch, user?.profile_id]);
+
+  useEffect(() => {
     if (user) {
       setForm(user);
       setIsActive(!!authUser?.is_active);
@@ -52,9 +59,23 @@ export default function Profile() {
     setFeedback("");
   };
 
-  const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
-  };
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
+const handleImageChange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (file.size > MAX_IMAGE_SIZE) {
+    setFeedback("❌ Image is too large. Max size is 5 MB.");
+    setImageFile(null);
+    // reset the input so user can pick again
+    e.target.value = "";
+    return;
+  }
+
+  setFeedback(""); // clear old errors
+  setImageFile(file);
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -202,6 +223,20 @@ export default function Profile() {
       setShareLoading(false);
     }
   };
+const truncate = (text = "", max = 90) =>
+  text.length > max ? text.slice(0, max - 1) + "…" : text;
+
+const { items: notifications = [] } = useAppSelector(
+  (s) => s.notifications || {}
+);
+
+const recentNotifications = [...notifications]
+  .sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+  .slice(0, 3);
+
 
   const imgSrc = form.profile_url
     ? `${import.meta.env.VITE_API_IMG_URL}${form.profile_url}?t=${Date.now()}`
@@ -242,36 +277,34 @@ export default function Profile() {
         border: "1px solid rgba(239,68,68,0.3)",
       };
 
-  return (
-    <>
-      <h2
-        className="fw-semibold"
-        style={{
-          fontSize: "1.4rem",
-          marginBottom: "1rem",
-          color: "var(--color-text-main)",
-        }}
-      >
-        Profile
-      </h2>
+return (
+  <>
+    <h2
+      className="fw-semibold mb-3 mb-md-4"
+      style={{
+        fontSize: "1.4rem",
+        color: "var(--color-text-main)",
+      }}
+    >
+      Profile
+    </h2>
 
-      <div
-        className="mx-auto rounded-4 border shadow-sm"
-        style={{
-          maxWidth: "56rem",
-          padding: "2rem",
-          transition: "color 0.2s, background-color 0.2s",
-          backgroundColor: "var(--color-bg-panel)",
-          borderColor: "var(--color-border)",
-          color: "var(--color-text-main)",
-        }}
-      >
+    <div
+      className="profile-card mx-auto rounded-4 border shadow-sm w-100"
+      style={{
+        maxWidth: "56rem",
+        transition: "color 0.2s, background-color 0.2s",
+        backgroundColor: "var(--color-bg-panel)",
+        borderColor: "var(--color-border)",
+        color: "var(--color-text-main)",
+      }}
+    >
+      {/* Inner padding wrapper so we can make it responsive */}
+      <div className="p-3 p-sm-4">
         {/* Header */}
         <div
-          className="d-flex flex-column flex-md-row align-items-center gap-3"
+          className="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-3 gap-md-4 mb-3 mb-md-4 pb-3 pb-md-4"
           style={{
-            marginBottom: "2rem",
-            paddingBottom: "1.5rem",
             borderBottom: "1px solid var(--color-border)",
           }}
         >
@@ -279,8 +312,8 @@ export default function Profile() {
             src={imgSrc}
             alt="User Avatar"
             style={{
-              width: "7rem",
-              height: "7rem",
+              width: "6rem",
+              height: "6rem",
               borderRadius: "999px",
               objectFit: "cover",
               border: "4px solid var(--color-primary)",
@@ -289,11 +322,10 @@ export default function Profile() {
 
           <div className="flex-grow-1 text-center text-md-start">
             <h2
-              className="fw-semibold"
+              className="fw-semibold mb-1"
               style={{
-                fontSize: "1.7rem",
+                fontSize: "1.5rem",
                 color: "var(--color-primary)",
-                marginBottom: "0.25rem",
               }}
             >
               {form.first_name} {form.last_name}
@@ -307,18 +339,20 @@ export default function Profile() {
             >
               {form.profession || "—"}
             </p>
-            <p className="mb-2" style={{ color: "var(--color-text-muted)" }}>
+            <p
+              className="mb-2"
+              style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}
+            >
               {form.user_email}
             </p>
 
             <button
               type="button"
               onClick={() => setShowEditModal(true)}
-              className="btn btn-sm"
+              className="btn btn-sm mt-1"
               style={{
-                marginTop: "0.25rem",
-                fontSize: "0.7rem",
-                padding: "0.25rem 0.75rem",
+                fontSize: "0.75rem",
+                padding: "0.3rem 0.9rem",
                 borderRadius: "999px",
                 fontWeight: 500,
                 border: "1px solid var(--color-primary)",
@@ -330,7 +364,7 @@ export default function Profile() {
             </button>
           </div>
 
-          <div className="d-flex flex-column align-items-center align-items-md-end gap-2">
+          <div className="d-flex flex-row flex-md-column align-items-center align-items-md-end gap-2">
             <span
               className="badge rounded-pill"
               style={{
@@ -349,9 +383,9 @@ export default function Profile() {
         <div className="row g-3">
           <div className="col-12 col-md-6">
             <div
-              className="rounded-3 border shadow-sm"
+              className="rounded-3 border shadow-sm h-100"
               style={{
-                padding: "1rem",
+                padding: "0.9rem",
                 borderColor: "var(--color-border)",
               }}
             >
@@ -400,9 +434,9 @@ export default function Profile() {
 
           <div className="col-12 col-md-6">
             <div
-              className="rounded-3 border shadow-sm"
+              className="rounded-3 border shadow-sm h-100"
               style={{
-                padding: "1rem",
+                padding: "0.9rem",
                 borderColor: "var(--color-border)",
               }}
             >
@@ -422,32 +456,58 @@ export default function Profile() {
                   listStyle: "none",
                   paddingLeft: 0,
                   fontSize: "0.9rem",
-                  color: "var(--color-text-muted)",
                 }}
               >
-                <li>🗓️ Joined “Mock Interview Practice” challenge</li>
-                <li>💬 Completed a Technical Interview round</li>
-                <li>⭐ Earned 25 new credits from community answers</li>
+                {recentNotifications.length === 0 ? (
+                  <li
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    No recent activity yet.
+                  </li>
+                ) : (
+                  recentNotifications.map((n) => (
+                    <li
+                      key={n.notification_id}
+                      className="mb-2"
+                      style={{ color: "var(--color-text-muted)" }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "0.8rem",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        <strong>{n.title}: </strong>
+                        {truncate(n.body, 90)}
+                      </div>
+                    </li>
+                  ))
+                )}
               </ul>
             </div>
           </div>
         </div>
 
         {/* Additional Options */}
-        <div className="row g-3 mt-4">
+        <div className="row g-3 mt-3 mt-md-4">
           {/* Share My Credit */}
           <div className="col-12 col-md-6">
             <div
               className="rounded-3 border shadow-sm h-100"
               style={{
-                padding: "1.25rem",
+                padding: "1rem",
                 borderColor: "var(--color-border)",
                 backgroundColor: "var(--color-bg-panel)",
                 color: "var(--color-text-main)",
               }}
             >
               <h4
-                className="fw-semibold mb-3 text-uppercase d-flex align-items-center"
+                className="fw-semibold mb-2 text-uppercase d-flex align-items-center"
                 style={{
                   fontSize: "0.8rem",
                   letterSpacing: "0.08em",
@@ -497,14 +557,14 @@ export default function Profile() {
             <div
               className="rounded-3 border shadow-sm h-100"
               style={{
-                padding: "1.25rem",
+                padding: "1rem",
                 borderColor: "var(--color-border)",
                 backgroundColor: "var(--color-bg-panel)",
                 color: "var(--color-text-main)",
               }}
             >
               <h4
-                className="fw-semibold mb-3 text-uppercase d-flex align-items-center"
+                className="fw-semibold mb-2 text-uppercase d-flex align-items-center"
                 style={{
                   fontSize: "0.8rem",
                   letterSpacing: "0.08em",
@@ -557,10 +617,8 @@ export default function Profile() {
 
         {/* Footer */}
         <div
-          className="text-center"
+          className="text-center mt-4 pt-3"
           style={{
-            marginTop: "2rem",
-            paddingTop: "1rem",
             borderTop: "1px solid var(--color-border)",
             fontSize: "0.85rem",
             color: "var(--color-text-muted)",
@@ -582,387 +640,439 @@ export default function Profile() {
             </span>
           </p>
         </div>
+      </div>
 
-        {/* -------------------- Modals -------------------- */}
+      {/* -------------------- Modals -------------------- */}
 
-        {/* Edit Profile Modal */}
-        {showEditModal && (
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1050,
+            backdropFilter: "blur(4px)",
+          }}
+        >
           <div
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            className="position-relative rounded-4 border shadow-lg w-100 mx-3 mx-sm-0"
             style={{
-              backgroundColor: "rgba(0,0,0,0.5)",
-              zIndex: 1050,
-              backdropFilter: "blur(4px)",
+              maxWidth: "28rem",
+              padding: "1.5rem 1.75rem",
+              backgroundColor: "var(--color-bg-panel)",
+              borderColor: "var(--color-border)",
+              color: "var(--color-text-main)",
             }}
           >
-            <div
-              className="position-relative rounded-4 border shadow-lg"
+            <button
+              type="button"
+              className="btn-close theme-close-btn"
+              aria-label="Close"
+              onClick={() => setShowEditModal(false)}
               style={{
-                width: "100%",
-                maxWidth: "28rem",
-                padding: "2rem",
-                backgroundColor: "var(--color-bg-panel)",
-                borderColor: "var(--color-border)",
-                color: "var(--color-text-main)",
+                position: "absolute",
+                top: "0.75rem",
+                right: "0.75rem",
+              }}
+            />
+
+            <h3
+              className="text-center fw-semibold mb-4"
+              style={{
+                fontSize: "1.25rem",
+                color: "var(--color-primary)",
               }}
             >
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setShowEditModal(false)}
-                style={{
-                  position: "absolute",
-                  top: "0.75rem",
-                  right: "0.75rem",
-                  filter: "invert(1)",
-                }}
-              />
+              Edit Profile
+            </h3>
 
-              <h3
-                className="text-center fw-semibold mb-4"
-                style={{
-                  fontSize: "1.25rem",
-                  color: "var(--color-primary)",
-                }}
-              >
-                Edit Profile
-              </h3>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  name="first_name"
+                  value={form.first_name || ""}
+                  onChange={handleChange}
+                  placeholder="First Name"
+                  className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    fontSize: "0.9rem",
+                    backgroundColor: "transparent",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                  }}
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  name="last_name"
+                  value={form.last_name || ""}
+                  onChange={handleChange}
+                  placeholder="Last Name"
+                  className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    fontSize: "0.9rem",
+                    backgroundColor: "transparent",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                  }}
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  name="profession"
+                  value={form.profession || ""}
+                  onChange={handleChange}
+                  placeholder="Profession"
+                  className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    fontSize: "0.9rem",
+                    backgroundColor: "transparent",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                  }}
+                />
+              </div>
 
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    name="first_name"
-                    value={form.first_name || ""}
-                    onChange={handleChange}
-                    placeholder="First Name"
-                    className="form-control"
-                    style={{
-                      fontSize: "0.9rem",
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
-                </div>
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    name="last_name"
-                    value={form.last_name || ""}
-                    onChange={handleChange}
-                    placeholder="Last Name"
-                    className="form-control"
-                    style={{
-                      fontSize: "0.9rem",
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
-                </div>
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    name="profession"
-                    value={form.profession || ""}
-                    onChange={handleChange}
-                    placeholder="Profession"
-                    className="form-control"
-                    style={{
-                      fontSize: "0.9rem",
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
-                </div>
+              <div className="mb-3">
+                <label
+                  className="form-label mb-1"
+                  style={{
+                    fontSize: "0.8rem",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  Profile Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-100 p-2 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    fontSize: "0.85rem",
+                    backgroundColor: "transparent",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                    cursor: "pointer",
+                  }}
+                />
+              </div>
 
-                <div className="mb-3">
-                  <label
-                    className="form-label mb-1"
-                    style={{
-                      fontSize: "0.8rem",
-                      color: "var(--color-text-muted)",
-                    }}
-                  >
-                    Profile Image
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="form-control"
-                    style={{
-                      fontSize: "0.85rem",
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
-                </div>
+              {feedback && (
+                <p
+                  className="text-center rounded-3 mb-3"
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "0.4rem 0.6rem",
+                    color: feedback.startsWith("✅") ? "#4ade80" : "#f87171",
+                    backgroundColor: feedback.startsWith("✅")
+                      ? "rgba(34,197,94,0.08)"
+                      : "rgba(248,113,113,0.08)",
+                  }}
+                >
+                  {feedback}
+                </p>
+              )}
 
-                {feedback && (
-                  <p
-                    className="text-center rounded-3 mb-3"
-                    style={{
-                      fontSize: "0.85rem",
-                      padding: "0.4rem 0.6rem",
-                      color: feedback.startsWith("✅") ? "#4ade80" : "#f87171",
-                      backgroundColor: feedback.startsWith("✅")
-                        ? "rgba(34,197,94,0.08)"
-                        : "rgba(248,113,113,0.08)",
-                    }}
-                  >
-                    {feedback}
-                  </p>
-                )}
-
-                <div className="d-flex justify-content-center">
-                  <button
-                    type="submit"
-                    disabled={status === "loading"}
-                    className="btn"
-                    style={{
-                      padding: "0.4rem 1.5rem",
-                      borderRadius: "0.5rem",
-                      color: "#fff",
-                      fontWeight: 500,
-                      fontSize: "0.9rem",
-                      backgroundColor: "var(--color-primary)",
-                      opacity: status === "loading" ? 0.7 : 1,
-                    }}
-                  >
-                    {status === "loading" ? "Saving..." : "Save Changes"}
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="d-flex justify-content-center">
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="btn"
+                  style={{
+                    padding: "0.4rem 1.5rem",
+                    borderRadius: "0.5rem",
+                    color: "#fff",
+                    fontWeight: 500,
+                    fontSize: "0.9rem",
+                    backgroundColor: "var(--color-primary)",
+                    opacity: status === "loading" ? 0.7 : 1,
+                  }}
+                >
+                  {status === "loading" ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Password Change Modal */}
-        {showPasswordModal && (
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1050,
+            backdropFilter: "blur(4px)",
+          }}
+        >
           <div
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            className="position-relative rounded-4 border shadow-lg w-100 mx-3 mx-sm-0"
             style={{
-              backgroundColor: "rgba(0,0,0,0.5)",
-              zIndex: 1050,
-              backdropFilter: "blur(4px)",
+              maxWidth: "28rem",
+              padding: "1.5rem 1.75rem",
+              backgroundColor: "var(--color-bg-panel)",
+              borderColor: "var(--color-border)",
+              color: "var(--color-text-main)",
             }}
           >
-            <div
-              className="position-relative rounded-4 border shadow-lg"
+            <button
+              type="button"
+              className="btn-close theme-close-btn"
+              aria-label="Close"
+              onClick={() => setShowPasswordModal(false)}
               style={{
-                width: "100%",
-                maxWidth: "28rem",
-                padding: "2rem",
-                backgroundColor: "var(--color-bg-panel)",
-                borderColor: "var(--color-border)",
-                color: "var(--color-text-main)",
+                position: "absolute",
+                top: "0.75rem",
+                right: "0.75rem",
+              }}
+            />
+
+            <h3
+              className="text-center fw-semibold mb-4"
+              style={{
+                fontSize: "1.25rem",
+                color: "var(--color-primary)",
               }}
             >
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={() => setShowPasswordModal(false)}
-                style={{
-                  position: "absolute",
-                  top: "0.75rem",
-                  right: "0.75rem",
-                  filter: "invert(1)",
-                }}
-              />
+              Change Password
+            </h3>
 
-              <h3
-                className="text-center fw-semibold mb-4"
-                style={{
-                  fontSize: "1.25rem",
-                  color: "var(--color-primary)",
-                }}
-              >
-                Change Password
-              </h3>
+            <form onSubmit={handlePasswordChange}>
+              <div className="mb-3">
+                <input
+                  type="password"
+                  placeholder="Current Password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                  className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    fontSize: "0.9rem",
+                    backgroundColor: "transparent",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                    borderRadius: "0.85rem",
+                  }}
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    fontSize: "0.9rem",
+                    backgroundColor: "transparent",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                    borderRadius: "0.85rem",
+                  }}
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
+                  style={{
+                    fontSize: "0.9rem",
+                    backgroundColor: "transparent",
+                    borderColor: "var(--color-border)",
+                    color: "var(--color-text-main)",
+                    borderRadius: "0.85rem",
+                  }}
+                />
+              </div>
 
-              <form onSubmit={handlePasswordChange}>
-                <div className="mb-3">
-                  <input
-                    type="password"
-                    placeholder="Current Password"
-                    value={passwordForm.currentPassword}
-                    onChange={(e) =>
-                      setPasswordForm({
-                        ...passwordForm,
-                        currentPassword: e.target.value,
-                      })
-                    }
-                    className="form-control"
-                    style={{
-                      fontSize: "0.9rem",
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
-                </div>
-                <div className="mb-3">
-                  <input
-                    type="password"
-                    placeholder="New Password"
-                    value={passwordForm.newPassword}
-                    onChange={(e) =>
-                      setPasswordForm({
-                        ...passwordForm,
-                        newPassword: e.target.value,
-                      })
-                    }
-                    className="form-control"
-                    style={{
-                      fontSize: "0.9rem",
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
-                </div>
-                <div className="mb-3">
-                  <input
-                    type="password"
-                    placeholder="Confirm New Password"
-                    value={passwordForm.confirmPassword}
-                    onChange={(e) =>
-                      setPasswordForm({
-                        ...passwordForm,
-                        confirmPassword: e.target.value,
-                      })
-                    }
-                    className="form-control"
-                    style={{
-                      fontSize: "0.9rem",
-                      backgroundColor: "transparent",
-                      borderColor: "var(--color-border)",
-                      color: "var(--color-text-main)",
-                    }}
-                  />
-                </div>
+              {passwordMsg && (
+                <p
+                  className="text-center rounded-3 mb-3"
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "0.4rem 0.6rem",
+                    color: passwordMsg.startsWith("✅") ? "#4ade80" : "#f87171",
+                    backgroundColor: passwordMsg.startsWith("✅")
+                      ? "rgba(34,197,94,0.08)"
+                      : "rgba(248,113,113,0.08)",
+                  }}
+                >
+                  {passwordMsg}
+                </p>
+              )}
 
-                {passwordMsg && (
-                  <p
-                    className="text-center rounded-3 mb-3"
-                    style={{
-                      fontSize: "0.85rem",
-                      padding: "0.4rem 0.6rem",
-                      color: passwordMsg.startsWith("✅")
-                        ? "#4ade80"
-                        : "#f87171",
-                      backgroundColor: passwordMsg.startsWith("✅")
-                        ? "rgba(34,197,94,0.08)"
-                        : "rgba(248,113,113,0.08)",
-                    }}
-                  >
-                    {passwordMsg}
-                  </p>
-                )}
-
-                <div className="d-flex justify-content-center">
-                  <button
-                    type="submit"
-                    className="btn"
-                    style={{
-                      padding: "0.4rem 1.5rem",
-                      borderRadius: "0.5rem",
-                      color: "#fff",
-                      fontWeight: 500,
-                      fontSize: "0.9rem",
-                      backgroundColor: "var(--color-primary)",
-                    }}
-                  >
-                    Change Password
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="d-flex justify-content-center">
+                <button
+                  type="submit"
+                  className="btn"
+                  style={{
+                    padding: "0.4rem 1.5rem",
+                    borderRadius: "0.5rem",
+                    color: "#fff",
+                    fontWeight: 500,
+                    fontSize: "0.9rem",
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                >
+                  Change Password
+                </button>
+              </div>
+            </form>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Share Credit Modal */}
-        {showShareModal && (
+      {/* Share Credit Modal */}
+      {showShareModal && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.5)",
+            zIndex: 1050,
+            backdropFilter: "blur(4px)",
+          }}
+        >
           <div
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+            className="position-relative rounded-4 border shadow-lg w-100 mx-3 mx-sm-0"
             style={{
-              backgroundColor: "rgba(0,0,0,0.5)",
-              zIndex: 1050,
-              backdropFilter: "blur(4px)",
+              maxWidth: "28rem",
+              padding: "1.5rem 1.75rem",
+              backgroundColor: "var(--color-bg-panel)",
+              borderColor: "var(--color-border)",
+              color: "var(--color-text-main)",
             }}
           >
-            <div
-              className="position-relative rounded-4 border shadow-lg"
+            <button
+              type="button"
+              onClick={resetShareState}
+              className="btn-close theme-close-btn"
+              aria-label="Close"
               style={{
-                width: "100%",
-                maxWidth: "28rem",
-                padding: "2rem",
-                backgroundColor: "var(--color-bg-panel)",
-                borderColor: "var(--color-border)",
-                color: "var(--color-text-main)",
+                position: "absolute",
+                top: "0.75rem",
+                right: "0.75rem",
+              }}
+            />
+
+            <h3
+              className="text-center fw-semibold mb-4"
+              style={{
+                fontSize: "1.25rem",
+                color: "var(--color-primary)",
               }}
             >
-              <button
-                type="button"
-                onClick={resetShareState}
-                className="btn-close"
-                aria-label="Close"
-                style={{
-                  position: "absolute",
-                  top: "0.75rem",
-                  right: "0.75rem",
-                  filter: "invert(1)",
-                }}
-              />
+              Share Credits
+            </h3>
 
-              <h3
-                className="text-center fw-semibold mb-4"
-                style={{
-                  fontSize: "1.25rem",
-                  color: "var(--color-primary)",
-                }}
-              >
-                Share Credits
-              </h3>
-
-              {/* Step 1: Email */}
-              {shareStep === 1 && (
-                <form onSubmit={handleCheckUser}>
-                  <p
-                    className="text-center mb-3"
+            {/* Step 1: Email */}
+            {shareStep === 1 && (
+              <form onSubmit={handleCheckUser}>
+                <p
+                  className="text-center mb-3"
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  Enter the recipient&apos;s email to verify.
+                </p>
+                <div className="mb-3">
+                  <input
+                    type="email"
+                    value={receiverEmail}
+                    onChange={(e) => setReceiverEmail(e.target.value)}
+                    placeholder="Receiver email"
+                    required
+                    className="w-100 p-2 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
                     style={{
-                      fontSize: "0.85rem",
-                      color: "var(--color-text-muted)",
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                      borderRadius: "0.85rem",
                     }}
-                  >
-                    Enter the recipient&apos;s email to verify.
-                  </p>
-                  <div className="mb-3">
-                    <input
-                      type="email"
-                      value={receiverEmail}
-                      onChange={(e) => setReceiverEmail(e.target.value)}
-                      placeholder="Receiver email"
-                      required
-                      className="form-control"
-                      style={{
-                        fontSize: "0.9rem",
-                        backgroundColor: "transparent",
-                        borderColor: "var(--color-border)",
-                        color: "var(--color-text-main)",
-                      }}
-                    />
-                  </div>
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={shareLoading}
+                  className="btn w-100"
+                  style={{
+                    padding: "0.45rem 1.25rem",
+                    borderRadius: "0.5rem",
+                    color: "#fff",
+                    fontWeight: 500,
+                    fontSize: "0.9rem",
+                    backgroundColor: "var(--color-primary)",
+                    opacity: shareLoading ? 0.8 : 1,
+                  }}
+                >
+                  {shareLoading ? "Checking..." : "Next"}
+                </button>
+              </form>
+            )}
+
+            {/* Step 2: Amount */}
+            {shareStep === 2 && receiverData && (
+              <form onSubmit={handleTransferCredit}>
+                <p
+                  className="text-center mb-3"
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  Sending credit to{" "}
+                  <strong style={{ color: "var(--color-primary)" }}>
+                    {receiverData.user_email}
+                  </strong>
+                </p>
+
+                <div className="mb-3">
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="Amount to send"
+                    required
+                    min="1"
+                    className="form-control"
+                    style={{
+                      fontSize: "0.9rem",
+                      backgroundColor: "transparent",
+                      borderColor: "var(--color-border)",
+                      color: "var(--color-text-main)",
+                    }}
+                  />
+                </div>
+
+                <div className="d-flex flex-column flex-sm-row gap-2">
                   <button
                     type="submit"
                     disabled={shareLoading}
-                    className="btn w-100"
+                    className="btn flex-grow-1"
                     style={{
                       padding: "0.45rem 1.25rem",
                       borderRadius: "0.5rem",
@@ -973,119 +1083,67 @@ export default function Profile() {
                       opacity: shareLoading ? 0.8 : 1,
                     }}
                   >
-                    {shareLoading ? "Checking..." : "Next"}
+                    {shareLoading ? "Sending..." : "Send Credit"}
                   </button>
-                </form>
-              )}
-
-              {/* Step 2: Amount */}
-              {shareStep === 2 && receiverData && (
-                <form onSubmit={handleTransferCredit}>
-                  <p
-                    className="text-center mb-3"
+                  <button
+                    type="button"
+                    onClick={() => setShareStep(1)}
+                    className="btn flex-grow-1"
                     style={{
-                      fontSize: "0.85rem",
+                      padding: "0.45rem 1.25rem",
+                      borderRadius: "0.5rem",
+                      fontSize: "0.8rem",
+                      backgroundColor: "transparent",
+                      border: "1px solid var(--color-border)",
                       color: "var(--color-text-muted)",
                     }}
                   >
-                    Sending credit to{" "}
-                    <strong style={{ color: "var(--color-primary)" }}>
-                      {receiverData.user_email}
-                    </strong>
-                  </p>
-
-                  <div className="mb-3">
-                    <input
-                      type="number"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder="Amount to send"
-                      required
-                      min="1"
-                      className="form-control"
-                      style={{
-                        fontSize: "0.9rem",
-                        backgroundColor: "transparent",
-                        borderColor: "var(--color-border)",
-                        color: "var(--color-text-main)",
-                      }}
-                    />
-                  </div>
-
-                  <div className="d-flex flex-column flex-sm-row gap-2">
-                    <button
-                      type="submit"
-                      disabled={shareLoading}
-                      className="btn flex-grow-1"
-                      style={{
-                        padding: "0.45rem 1.25rem",
-                        borderRadius: "0.5rem",
-                        color: "#fff",
-                        fontWeight: 500,
-                        fontSize: "0.9rem",
-                        backgroundColor: "var(--color-primary)",
-                        opacity: shareLoading ? 0.8 : 1,
-                      }}
-                    >
-                      {shareLoading ? "Sending..." : "Send Credit"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShareStep(1)}
-                      className="btn flex-grow-1"
-                      style={{
-                        padding: "0.45rem 1.25rem",
-                        borderRadius: "0.5rem",
-                        fontSize: "0.8rem",
-                        backgroundColor: "transparent",
-                        border: "1px solid var(--color-border)",
-                        color: "var(--color-text-muted)",
-                      }}
-                    >
-                      Back
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* Step 3: Result */}
-              {shareStep === 3 && (
-                <div className="text-center">
-                  <p
-                    className="rounded-3 mb-3"
-                    style={{
-                      fontSize: "0.85rem",
-                      padding: "0.6rem 0.8rem",
-                      color: shareMsg.startsWith("✅") ? "#4ade80" : "#f87171",
-                      backgroundColor: shareMsg.startsWith("✅")
-                        ? "rgba(34,197,94,0.08)"
-                        : "rgba(248,113,113,0.08)",
-                    }}
-                  >
-                    {shareMsg}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={resetShareState}
-                    className="btn"
-                    style={{
-                      padding: "0.45rem 1.5rem",
-                      borderRadius: "0.5rem",
-                      color: "#fff",
-                      fontWeight: 500,
-                      fontSize: "0.9rem",
-                      backgroundColor: "var(--color-primary)",
-                    }}
-                  >
-                    Done
+                    Back
                   </button>
                 </div>
-              )}
-            </div>
+              </form>
+            )}
+
+            {/* Step 3: Result */}
+            {shareStep === 3 && (
+              <div className="text-center">
+                <p
+                  className="rounded-3 mb-3"
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "0.6rem 0.8rem",
+                    color: shareMsg.startsWith("✅") ? "#4ade80" : "#f87171",
+                    backgroundColor: shareMsg.startsWith("✅")
+                      ? "rgba(34,197,94,0.08)"
+                      : "rgba(248,113,113,0.08)",
+                  }}
+                >
+                  {shareMsg}
+                </p>
+                <button
+                  type="button"
+                  onClick={resetShareState}
+                  className="btn"
+                  style={{
+                    padding: "0.45rem 1.5rem",
+                    borderRadius: "0.5rem",
+                    color: "#fff",
+                    fontWeight: 500,
+                    fontSize: "0.9rem",
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
-        )}
-        {/* ------------------ end modals ------------------ */}
-      </div>
-    </>
-  );
+        </div>
+      )}
+      {/* ------------------ end modals ------------------ */}
+    </div>
+  </>
+);
+
+
 }

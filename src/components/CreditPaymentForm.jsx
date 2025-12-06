@@ -217,15 +217,9 @@ console.log(transactionStatus, paymentStatus);
             onSubmit={handleSubmit}
             style={{ opacity: isSubmitting ? 0.35 : 1 }}
           >
-            <div
-              className="p-3 rounded-3 mb-3"
-              style={{
-                backgroundColor: "var(--color-bg-panel)",
-                border: "1px solid var(--color-border)",
-              }}
-            >
+            
               <PaymentElement />
-            </div>
+            
 
             <button
               type="submit"

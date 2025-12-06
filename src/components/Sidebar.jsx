@@ -7,7 +7,6 @@ import {
   LogOut,
   Bell,
   Ticket,
-  FileText,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../features/auth/authSlice";
@@ -24,19 +23,17 @@ export default function Sidebar({ collapsed }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // All sidebar items (add /tickets and /notifications)
+  // All sidebar items
   const items = useMemo(
     () => [
       { id: "dashboard", label: "Dashboard", icon: <Home size={18} /> },
       { id: "interview", label: "Interview", icon: <UilUsersAlt size={18} /> },
-      // { id: "speech", label: "Speech Practice", icon: <Mic size={18} /> },
       { id: "reports", label: "Results", icon: <BarChart3 size={18} /> },
       { id: "profile", label: "Profile", icon: <User size={18} /> },
       { id: "buy-credits", label: "Credit", icon: <UilUsdCircle size={18} /> },
       { id: "notes", label: "Notes", icon: <UilWindowSection size={18} /> },
       { id: "notifications", label: "Notifications", icon: <Bell size={18} /> },
       { id: "tickets", label: "Support Tickets", icon: <Ticket size={18} /> },
-      // { id: "settings", label: "Settings", icon: <FileText size={18} /> },
     ],
     []
   );
@@ -44,7 +41,6 @@ export default function Sidebar({ collapsed }) {
   // Determine active item based on current URL path
   const activeId = useMemo(() => {
     const path = location.pathname || "/";
-    // e.g. "/dashboard", "/reports/123" → match "dashboard" or "reports"
     const match = items.find((item) =>
       path === "/" ? item.id === "dashboard" : path.startsWith(`/${item.id}`)
     );
@@ -60,16 +56,16 @@ export default function Sidebar({ collapsed }) {
 
   return (
     <aside
-      className="position-fixed"
+      className={`position-fixed dashboard-sidebar ${
+        collapsed ? "is-collapsed" : ""
+      }`}
       style={{
-        top: "4rem", // same as previous top-16 (4rem)
+        top: "4rem", // same as navbar height
         left: 0,
         height: "calc(100vh - 4rem)",
-        width: collapsed ? "5rem" : "16rem", // ~w-20 vs w-64
         backgroundColor: "var(--color-bg-sidebar)",
         borderRight: "1px solid var(--color-border)",
         color: "var(--color-text-main)",
-        transition: "width 0.3s ease",
         zIndex: 1000,
       }}
     >
@@ -84,13 +80,13 @@ export default function Sidebar({ collapsed }) {
                 key={item.id}
                 to={`/${item.id}`}
                 aria-current={isActive ? "page" : undefined}
-                className="position-relative d-flex align-items-center px-3 py-2 rounded-3 text-decoration-none mb-2 small"
+                className="sidebar-item position-relative d-flex align-items-center px-3 py-2 rounded-3 text-decoration-none mb-2 small"
                 style={{
                   color: isActive
                     ? "var(--color-primary)"
                     : "var(--color-text-muted)",
                   backgroundColor: isActive
-                    ? "rgba(243,146,40,0.15)" // similar to primary/15
+                    ? "rgba(243,146,40,0.15)"
                     : "transparent",
                   border: isActive
                     ? "1px solid rgba(243,146,40,0.6)"
@@ -135,17 +131,23 @@ export default function Sidebar({ collapsed }) {
                   {item.icon}
                 </span>
 
+                {/* Normal label (visible when not collapsed / desktop) */}
                 {!collapsed && (
-                  <span className="ms-2 text-truncate">{item.label}</span>
+                  <span className="ms-2 text-truncate sidebar-label">
+                    {item.label}
+                  </span>
                 )}
+
+                {/* Tooltip label (for collapsed sidebar on hover) */}
+                <span className="sidebar-tooltip">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Footer / Logout */}
+        {/* Footer / Logout – desktop only (mobile uses navbar button) */}
         <div
-          className="border-top mt-3 p-3"
+          className="border-top mt-3 p-3 d-none d-md-block"
           style={{ borderColor: "var(--color-border)" }}
         >
           <button

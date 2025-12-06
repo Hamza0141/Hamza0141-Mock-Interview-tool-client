@@ -42,14 +42,14 @@ const ContactForm = () => {
                             </form>
                         </div>
                     </div>
-                    <div className="col-lg-6 col-md-6">
+                    {/* <div className="col-lg-6 col-md-6">
                         <div className="contact-wrap">
                             <div className="contact-video-wrap">
                                 <video className="contact-video" src="/img/all-img/video-4.mp4" playsInline autoPlay muted loop>
                                 </video>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

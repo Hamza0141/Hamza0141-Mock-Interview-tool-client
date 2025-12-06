@@ -29,7 +29,14 @@
   --color-text-muted: #b5b5b5;
   --color-border: #2c2c3a;
 }
+.theme-close-btn {
+  filter: none;
+}
 
+/* Dark mode – make the X white */
+:root.dark .theme-close-btn {
+  filter: invert(1);
+}
 /* ---------- GLOBAL BODY STYLES ---------- */
 /* assuming <body class="selfmock-dashboard"> in index.html */
 body.selfmock-dashboard {
@@ -37,3 +44,68 @@ body.selfmock-dashboard {
   background-color: var(--color-bg-body);
   color: var(--color-text-main);
 }
+
+/* ===== Sidebar base ===== */
+.dashboard-sidebar {
+  width: 16rem; /* expanded width */
+  transition: width 0.2s ease;
+}
+
+/* Collapsed state (desktop toggle & when collapsed=true) */
+.dashboard-sidebar.is-collapsed {
+  width: 5rem; /* icon-only */
+}
+
+/* Sidebar items */
+.dashboard-sidebar .sidebar-item {
+  position: relative;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  gap: 0.5rem;
+}
+
+/* Tooltip bubble (hidden by default) */
+.dashboard-sidebar .sidebar-tooltip {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0.5rem;
+  background-color: var(--color-bg-panel);
+  color: var(--color-text-main);
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  z-index: 1100;
+}
+
+/* Only show tooltip when sidebar is collapsed */
+.dashboard-sidebar.is-collapsed .sidebar-item:hover .sidebar-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===== Mobile: force compact sidebar look ===== */
+@media (max-width: 768px) {
+  /* Always look collapsed on mobile */
+  .dashboard-sidebar {
+    width: 5rem;
+  }
+
+  /* Hide inline labels on mobile */
+  .dashboard-sidebar .sidebar-label {
+    display: none;
+  }
+
+  /* Center icons */
+  .dashboard-sidebar .sidebar-item {
+    justify-content: center;
+  }
+}
+

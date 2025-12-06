@@ -150,7 +150,7 @@ export default function InterviewPage() {
     const credits = activeUser?.credit_balance ?? 0;
     const trial = activeUser?.free_trial ?? 0;
     if (credits <= 0 && trial <= 0) {
-      navigate("/pricing");
+      navigate("/buy-credits");
     } else {
       navigate(targetPath);
     }
