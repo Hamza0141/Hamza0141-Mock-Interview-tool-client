@@ -33,12 +33,12 @@ const AboutOne = ({ className, inVideoBg }) => {
                 <div className="img-box">
                   <img
                     className="image-box-item"
-                    src="/img/AI-Image/about.png"
+                    src="/img/AI-Image/about-two.png"
                     alt="image"
                   />
                   <img
                     className="image-box-item"
-                    src="/img/AI-Image/about.png"
+                    src="/img/AI-Image/about-two.png"
                     alt="image"
                   />
                 </div>

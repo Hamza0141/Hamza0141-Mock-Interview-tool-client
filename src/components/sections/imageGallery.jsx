@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "motion/react";
-import { galleryItemsData } from "@/db/galleryItemsData";
+import { galleryItemsData } from "@/db/galleryItemsData.js";
 
 const itemVariants = {
   initial: { opacity: 0, scale: 0.9 },

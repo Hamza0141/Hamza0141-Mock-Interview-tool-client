@@ -7,16 +7,16 @@ import { useAppSelector } from "../app/hooks";
 
 
 // ========== TEMPLATE PUBLIC SITE ==========
-import RootLayout from "@/layouts/root";
-import TemplateHome from "@/pages/home";
-import About from "@/pages/about";
-import Services from "@/pages/services";
-// import Team from "@/pages/team";
-import Faq from "@/pages/faq";
-import PricingTemplate from "@/pages/pricing";
-import NotFound from "@/pages/not-found";
-import CookiesPage from "@/pages/CookiesPage";
-import Contact from "@/pages/contact";
+import RootLayout from "@/layouts/root.jsx";
+import TemplateHome from "@/pages/home.jsx";
+import About from "@/pages/about.jsx";
+import Services from "@/pages/services.jsx";
+// import Team from "@/pages/team.jsx";
+import Faq from "@/pages/faq.jsx";
+import PricingTemplate from "@/pages/pricing.jsx";
+import NotFound from "@/pages/not-found.jsx";
+import CookiesPage from "@/pages/CookiesPage.jsx";
+import Contact from "@/pages/contact.jsx";
 
 // ========== YOUR INTERNAL APP PAGES ==========
 const TermsPage = lazy(() => import("../pages/TermsPage"));

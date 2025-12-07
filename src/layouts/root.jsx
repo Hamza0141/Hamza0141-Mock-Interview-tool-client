@@ -10,9 +10,9 @@ import "@/assets/css/header.css";
 import "@/assets/css/style.css";
 import "@/assets/css/responsive.css";
 
-import Header from "@/components/sections/header/header"; 
-import Footer from "@/components/sections/footer"; 
-import AddAnimation from "@/components/ui/addAnimation";
+import Header from "@/components/sections/header/header.jsx"; 
+import Footer from "@/components/sections/footer.jsx"; 
+import AddAnimation from "@/components/ui/addAnimation.jsx";
 
 
 const RootLayout = () => {

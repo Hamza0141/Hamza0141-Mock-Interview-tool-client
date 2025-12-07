@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { navigationData } from "@/db/navigationData";
+import { navigationData } from "@/db/navigationData.js";
 import { useAppSelector } from "../../../app/hooks";
 
 const Navbar = () => {

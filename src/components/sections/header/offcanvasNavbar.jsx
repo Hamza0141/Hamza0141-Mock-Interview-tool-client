@@ -1,7 +1,7 @@
 // src/components/sections/header/offcanvasNavbar.jsx
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { navigationData } from "@/db/navigationData";
+import { navigationData } from "@/db/navigationData.js";
 
 const ResponsiveNavbar = () => {
   const { pathname } = useLocation();

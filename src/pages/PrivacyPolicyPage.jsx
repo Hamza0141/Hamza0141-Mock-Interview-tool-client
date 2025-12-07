@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import PageHeader from "@/components/sections/pageHeader";
+// import PageHeader from "@/components/sections/pageHeader.jsx";
 
 const PrivacyPolicy = () => {
   return (

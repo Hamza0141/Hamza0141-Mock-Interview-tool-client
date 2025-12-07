@@ -81,12 +81,12 @@ const WorkProcess = ({ order, isLampImgTop }) => {
                   <>
                     <img
                       className="image-box-item"
-                      src="/img/AI-Image/about.png"
+                      src="/img/AI-Image/andres-siimon.jpg"
                       alt="image"
                     />
                     <img
                       className="image-box-item"
-                      src="/img/AI-Image/about.png"
+                      src="/img/AI-Image/andres-siimon.jpg"
                       alt="image"
                     />
                   </>
