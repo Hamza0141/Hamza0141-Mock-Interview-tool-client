@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 import { useContext, useEffect, useRef, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
-import { Sun, Moon, Menu, Bell, Search, LogOut,HomeIcon } from "lucide-react";
+import { Sun, Moon, Menu, Bell, Search, LogOut, HomeIcon } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../app/hooks";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -26,6 +26,20 @@ function NotificationBell() {
 
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  // ✅ track narrow viewport for mobile notification positioning
+  const [isNarrow, setIsNarrow] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (typeof window !== "undefined") {
+        setIsNarrow(window.innerWidth < 490);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Fetch notifications when user is known
   useEffect(() => {
@@ -96,9 +110,12 @@ function NotificationBell() {
         <div
           className="position-absolute border rounded-3 shadow-lg"
           style={{
-            right: 0,
+            // ✅ Center on very small screens so it doesn't get cut off
+            right: isNarrow ? "auto" : 0,
+            left: isNarrow ? "50%" : "auto",
+            transform: isNarrow ? "translateX(-50%)" : "none",
             marginTop: "0.5rem",
-            width: "20rem",
+            width: "min(20rem, 90vw)",
             backgroundColor: "var(--color-bg-panel)",
             zIndex: 1040,
             overflow: "hidden",
@@ -262,15 +279,18 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="btn border-0 p-1 rounded-2 me-1 d-none d-md-block"
+          className="btn p-1 rounded-2 me-1 d-none d-md-block"
           style={{
-            backgroundColor: "transparent",
+            // ✅ make burger visible in both themes
+            backgroundColor: "var(--color-bg-body)",
+            border: "1px solid var(--color-border)",
+            color: "var(--color-text-main)",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
+            e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.08)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
+            e.currentTarget.style.backgroundColor = "var(--color-bg-body)";
           }}
         >
           <Menu size={20} />
@@ -312,7 +332,11 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
           className="d-flex align-items-center w-100 rounded-pill border shadow-inner"
           style={{
             padding: "0.35rem 0.75rem",
-            backgroundColor: "rgba(15,23,42,0.8)",
+            // ✅ dynamic background for light/dark theme
+            backgroundColor:
+              theme === "light"
+                ? "rgba(248,249,251,0.95)" // light-ish
+                : "rgba(15,23,42,0.9)", // dark-ish
             borderColor: "var(--color-border)",
             columnGap: "0.5rem",
           }}
@@ -340,7 +364,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
 
       {/* Right: theme toggle, notifications, user chip, mobile logout */}
       <div className="d-flex align-items-center gap-2">
-        {/* Theme toggle */}
+        {/* Home button */}
         <Link to="/">
           <button
             type="button"
@@ -360,14 +384,11 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            {theme === "light" ? (
-              <HomeIcon size={16} />
-            ) : (
-              <HomeIcon size={16} />
-            )}
+            <HomeIcon size={16} />
           </button>
         </Link>
-        
+
+        {/* Theme toggle */}
         <button
           type="button"
           onClick={toggleTheme}
@@ -436,6 +457,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
             </div>
           </Link>
         )}
+
         {/* Mobile logout button (visible only < md) */}
         <button
           type="button"

@@ -2,10 +2,12 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { navigationData } from "@/db/navigationData.js";
+import { useAppSelector } from "../../../app/hooks";
 
 const ResponsiveNavbar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAppSelector((s) => s.auth);
 
   const handleNavClick = (href) => (e) => {
     e.preventDefault();
@@ -48,17 +50,31 @@ const ResponsiveNavbar = () => {
 
       <div className="offcanvas-body">
         <ul className="mobile-nav list-style">
-          {navigationData.map((item) => (
-            <li key={item.label}>
-              <Link
-                to={item.href}
-                onClick={handleNavClick(item.href)}
-                className={pathname === item.href ? "active" : ""}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
+          {navigationData.map((item) => {
+            const isActive = pathname === item.href;
+
+            // 🔒 Hide Login/Sign Up if user is authenticated
+            if (item.label === "Login/Sign Up" && isAuthenticated) {
+              return null;
+            }
+
+            // 🔓 Hide Dashboard link if user is NOT authenticated
+            if (item.label === "Dashboard" && !isAuthenticated) {
+              return null;
+            }
+
+            return (
+              <li key={item.label}>
+                <Link
+                  to={item.href}
+                  onClick={handleNavClick(item.href)}
+                  className={isActive ? "active" : ""}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="offcanvas-contact-info mt-4">

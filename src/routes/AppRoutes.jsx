@@ -8,12 +8,12 @@ import { useAppSelector } from "../app/hooks";
 
 // ========== TEMPLATE PUBLIC SITE ==========
 import RootLayout from "@/layouts/root.jsx";
-import TemplateHome from "@/pages/home.jsx";
+import TemplateHome from "@/pages/Home.jsx";
 import About from "@/pages/about.jsx";
 import Services from "@/pages/services.jsx";
 // import Team from "@/pages/team.jsx";
 import Faq from "@/pages/faq.jsx";
-import PricingTemplate from "@/pages/pricing.jsx";
+import PricingTemplate from "@/pages/Pricing.jsx";
 import NotFound from "@/pages/not-found.jsx";
 import CookiesPage from "@/pages/CookiesPage.jsx";
 import Contact from "@/pages/contact.jsx";

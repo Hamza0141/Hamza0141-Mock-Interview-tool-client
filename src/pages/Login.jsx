@@ -387,6 +387,7 @@ export default function Login() {
               <Link
                 to="/register"
                 className="text-[var(--color-secondary)] hover:underline"
+                style={{ color: "var(--color-primary)" }}
               >
                 Sign up
               </Link>

@@ -134,13 +134,13 @@ export default function EvaluationPage() {
             <RefreshCcw size={16} className="me-1" />
             Retake
           </button>
-          <button
+          {/* <button
             disabled
             className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center"
           >
             <Download size={16} className="me-1" />
             Export PDF
-          </button>
+          </button> */}
         </div>
       </div>
 

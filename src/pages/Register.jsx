@@ -310,7 +310,7 @@ export default function Register() {
                               required
                               value={form.first_name}
                               onChange={handleChange}
-                              className="form-control form-control-sm shadow-sm"
+                              className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
                               style={{
                                 backgroundColor: "var(--color-bg-panel)",
                                 color: "var(--color-text-main)",
@@ -332,7 +332,7 @@ export default function Register() {
                               required
                               value={form.last_name}
                               onChange={handleChange}
-                              className="form-control form-control-sm shadow-sm"
+                              className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
                               style={{
                                 backgroundColor: "var(--color-bg-panel)",
                                 color: "var(--color-text-main)",
@@ -356,7 +356,7 @@ export default function Register() {
                             required
                             value={form.user_email}
                             onChange={handleChange}
-                            className="form-control form-control-sm shadow-sm"
+                            className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
                             style={{
                               backgroundColor: "var(--color-bg-panel)",
                               color: "var(--color-text-main)",
@@ -379,7 +379,7 @@ export default function Register() {
                             required
                             value={form.user_password}
                             onChange={handleChange}
-                            className="form-control form-control-sm shadow-sm"
+                            className="w-100 p-3 border rounded-md bg-transparent focus:ring-2 focus:ring-[var(--color-primary)]"
                             style={{
                               backgroundColor: "var(--color-bg-panel)",
                               color: "var(--color-text-main)",

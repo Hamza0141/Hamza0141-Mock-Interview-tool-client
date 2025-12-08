@@ -10,7 +10,7 @@ export const navigationData = [
     hasDropdown: false,
   },
   {
-    label: "pricing",
+    label: "Pricing",
     href: "/pricing",
     hasDropdown: false,
   },
