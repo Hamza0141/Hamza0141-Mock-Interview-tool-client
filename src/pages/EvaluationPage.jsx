@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
@@ -5,7 +6,6 @@ import {
   Loader2,
   ArrowLeft,
   RefreshCcw,
-  Download,
   ChevronDown,
   ChevronUp,
   BarChart3,
@@ -30,50 +30,115 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function EvaluationPage() {
   const { session_id } = useParams();
   const navigate = useNavigate();
+
   const [evaluation, setEvaluation] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState("loading"); // loading | pending | complete | error
+  const [errorMessage, setErrorMessage] = useState("");
   const [expanded, setExpanded] = useState(null);
+
   const accent = "#f39228";
 
   useEffect(() => {
-    async function fetchEvaluation() {
+    if (!session_id) return;
+
+    let intervalId;
+
+    async function fetchStatus() {
       try {
         const res = await axiosClient.get(
-          `/user/interview/${session_id}/Ai_feedback`
+          `/ai/evaluation-status/${session_id}`
         );
-        if (res.data.success) setEvaluation(res.data.data);
+        const { success, status: st, data, message } = res.data || {};
+
+        if (st === "complete" && success) {
+          setEvaluation(data);
+          setStatus("complete");
+          clearInterval(intervalId);
+        } else if (st === "error" || success === false) {
+          setStatus("error");
+          setErrorMessage(message || "Evaluation failed.");
+          clearInterval(intervalId);
+        } else if (st === "not_found") {
+          setStatus("error");
+          setErrorMessage("Session not found or no evaluation exists.");
+          clearInterval(intervalId);
+        } else {
+          // still pending
+          setStatus("pending");
+        }
       } catch (err) {
-        console.error("❌ Failed to fetch evaluation:", err.message);
-      } finally {
-        setLoading(false);
+        console.error("❌ Failed to fetch evaluation status:", err.message);
+        setStatus("error");
+        setErrorMessage("Failed to load evaluation. Please try again later.");
+        clearInterval(intervalId);
       }
     }
-    if (session_id) fetchEvaluation();
+
+    // first check
+    fetchStatus();
+    // poll every 5 seconds
+    intervalId = setInterval(fetchStatus, 5000);
+
+    return () => clearInterval(intervalId);
   }, [session_id]);
 
-  if (loading)
+  // ===== LOADING / PENDING =====
+  if (status === "loading" || status === "pending") {
     return (
-      <div className="d-flex flex-column align-items-center justify-content-center min-vh-75">
+      <div className="d-flex flex-column align-items-center justify-content-center min-vh-75 text-center">
         <Loader2
           className="animate-spin"
           size={36}
           style={{ color: "var(--color-primary)" }}
         />
-        <p className="mt-3 small" style={{ color: "var(--color-text-muted)" }}>
-          Loading your evaluation summary...
+        <p className="mt-3 small" style={{ color: "var(--color-text-main)" }}>
+          Evaluating your responses...
+        </p>
+        <p
+          className="small"
+          style={{ color: "var(--color-text-muted)", maxWidth: 420 }}
+        >
+          This can take up to a minute depending on the length of your answers.
+          You can stay on this page or come back later — your results will be
+          saved.
         </p>
       </div>
     );
+  }
 
-  if (!evaluation)
+  // ===== ERROR STATE =====
+  if (status === "error") {
+    return (
+      <div className="container py-5 text-center">
+        <p className="text-danger fw-semibold mb-2">
+          Unable to load evaluation.
+        </p>
+        <p className="small mb-3" style={{ color: "var(--color-text-muted)" }}>
+          {errorMessage}
+        </p>
+        <button
+          onClick={() => navigate(-1)}
+          className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center"
+        >
+          <ArrowLeft size={16} className="me-1" />
+          Back
+        </button>
+      </div>
+    );
+  }
+
+  // ===== COMPLETE BUT NO DATA (very unlikely) =====
+  if (!evaluation) {
     return (
       <div className="container py-5 text-center">
         <p className="text-danger fw-semibold">
-          No evaluation found for this session.
+          No evaluation data found for this session.
         </p>
       </div>
     );
+  }
 
+  // ===== NORMAL RENDER =====
   const {
     meta_evaluation,
     ai_feedbacks,
@@ -134,13 +199,6 @@ export default function EvaluationPage() {
             <RefreshCcw size={16} className="me-1" />
             Retake
           </button>
-          {/* <button
-            disabled
-            className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center"
-          >
-            <Download size={16} className="me-1" />
-            Export PDF
-          </button> */}
         </div>
       </div>
 
@@ -223,8 +281,7 @@ export default function EvaluationPage() {
               className="small mb-0"
               style={{ color: "var(--color-text-muted)" }}
             >
-              No performance metrics are available yet. Complete an interview to
-              see your chart.
+              No performance metrics are available yet.
             </p>
           )}
         </div>
@@ -378,7 +435,6 @@ export default function EvaluationPage() {
                     </div>
                   </div>
 
-                  {/* Collapsible body */}
                   <AnimatePresence>
                     {expanded === idx && (
                       <motion.div
@@ -389,7 +445,6 @@ export default function EvaluationPage() {
                         className="mt-3 pt-3 border-top"
                         style={{ borderColor: "var(--color-border)" }}
                       >
-                        {/* User response */}
                         <p
                           className="small fst-italic mb-3"
                           style={{ color: "var(--color-text-muted)" }}
@@ -399,7 +454,6 @@ export default function EvaluationPage() {
                             : "No response provided."}
                         </p>
 
-                        {/* Mini bar chart */}
                         {scoreData.length > 0 && (
                           <div style={{ width: "100%", height: 120 }}>
                             <ResponsiveContainer>
@@ -423,7 +477,6 @@ export default function EvaluationPage() {
                           </div>
                         )}
 
-                        {/* Strengths & Weaknesses */}
                         <div className="row g-3 mt-3 small">
                           <div className="col-md-6">
                             <h5
@@ -475,7 +528,6 @@ export default function EvaluationPage() {
                           </div>
                         </div>
 
-                        {/* Suggestions */}
                         <div className="mt-3">
                           <h5
                             className="mb-1"

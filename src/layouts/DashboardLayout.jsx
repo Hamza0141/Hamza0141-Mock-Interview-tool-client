@@ -1,3 +1,4 @@
+// src/layouts/DashboardLayout.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../app/hooks";
@@ -7,66 +8,79 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
 export default function DashboardLayout({ children }) {
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
-    return window.innerWidth < 768; // 👈 collapsed by default on mobile
+    return window.innerWidth < 768; // collapsed by default on mobile
+  });
+
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth < 768;
   });
 
   useEffect(() => {
     function handleResize() {
-      if (window.innerWidth < 768) {
-        setCollapsed(true); 
+      if (typeof window === "undefined") return;
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        // on mobile we always treat sidebar as "collapsed"
+        setCollapsed(true);
       }
     }
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleToggleSidebar = () => {
-    setCollapsed((prev) => !prev);
+    // Only meaningful on desktop/tablet
+    if (!isMobile) {
+      setCollapsed((prev) => !prev);
+    }
   };
 
- useEffect(() => {
-   let isMounted = true;
+  // ✅ Session / cookie check
+  useEffect(() => {
+    let isMounted = true;
 
-   async function checkSession() {
-     try {
-       // 🔹 this will validate HttpOnly cookie on the backend
-       await authApi.me();
-     } catch (err) {
-       if (!isMounted) return;
-       console.error("❌ Session check failed:", err);
+    async function checkSession() {
+      try {
+        await authApi.me();
+      } catch (err) {
+        if (!isMounted) return;
+        console.error("❌ Session check failed:", err);
+        const status = err?.response?.status;
 
-       // If backend says 401/403/400 etc => treat as invalid session
-       const status = err?.response?.status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          status === 400 ||
+          status === undefined
+        ) {
+          localStorage.removeItem("user_data");
+          dispatch(logoutAction());
+          try {
+            await authApi.logout();
+          } catch (_) {}
+          navigate("/login", { replace: true });
+        }
+      }
+    }
 
-       if (status === 401 || status === 403 || status === 400 || status === undefined) {
-         // 1) clear localStorage
-         localStorage.removeItem("user_data");
+    checkSession();
 
-         // 2) reset Redux auth state
-         dispatch(logoutAction());
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch, navigate]);
 
-         // 3) optionally ask backend to clear cookie, ignore errors
-         try {
-           await authApi.logout();
-         } catch (_) {}
+  // marginLeft only for desktop where sidebar is rendered
+  const desktopMarginLeft = !isMobile ? (collapsed ? "5rem" : "16rem") : "0";
 
-         // 4) redirect to login (or "/" if you prefer)
-         navigate("/login", { replace: true });
-       }
-     }
-   }
-
-   checkSession();
-
-   return () => {
-     isMounted = false;
-   };
- }, [dispatch, navigate]);
   return (
     <div
       className="min-h-screen transition-colors duration-300 selfmock-dashboard"
@@ -76,21 +90,17 @@ export default function DashboardLayout({ children }) {
       }}
     >
       {/* Fixed Navbar */}
-      <Navbar
-        collapsed={collapsed}
-        onToggleSidebar={() => setCollapsed(!collapsed)}
-      />
+      <Navbar collapsed={collapsed} onToggleSidebar={handleToggleSidebar} />
 
       <div className="flex pt-16">
-        {/* Sidebar */}
-        <Sidebar collapsed={collapsed} />
+        {/* Sidebar visible only on md+ (desktop / tablet) */}
+        {!isMobile && <Sidebar collapsed={collapsed} />}
 
         {/* Main Content */}
         <main
-          className={`flex-1 p-6 transition-all duration-300 ${
-            collapsed ? "ml-20" : "ml-64"
-          }`}
+          className="flex-1 p-4 p-md-5 transition-all duration-300"
           style={{
+            marginLeft: desktopMarginLeft,
             backgroundColor: "var(--color-bg-body)",
             color: "var(--color-text-main)",
           }}

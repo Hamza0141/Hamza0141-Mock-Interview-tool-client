@@ -266,46 +266,49 @@ export default function InterviewSession() {
     }
   };
 
-  // ✅ submit interview for evaluation
-  const submitInterview = async () => {
-    try {
-      if (recording) await stopRecordingSafe();
-      setEvaluating(true);
-      window.speechSynthesis.cancel();
-      cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
-      stopWaveformStream();
+  //  submit interview for evaluation
+const submitInterview = async () => {
+  try {
+    if (recording) await stopRecordingSafe();
+    setEvaluating(true);
+    window.speechSynthesis.cancel();
+    cameraStreamRef.current?.getTracks()?.forEach((t) => t.stop());
+    stopWaveformStream();
 
-      const lastText = `${transcript || ""} ${typedText || ""}`.trim();
+    const lastText = `${transcript || ""} ${typedText || ""}`.trim();
 
-      const payload = {
-        session_id: interviewId,
-        first_name: user?.first_name || "Candidate",
-        asked_questions: [
-          ...answers,
-          {
-            question_id: questions[current]?.id,
-            asked_question: questions[current]?.question_text,
-            user_response: lastText,
-          },
-        ],
-      };
+    const payload = {
+      session_id: interviewId,
+      first_name: user?.first_name || "Candidate",
+      asked_questions: [
+        ...answers,
+        {
+          question_id: questions[current]?.id,
+          asked_question: questions[current]?.question_text,
+          user_response: lastText,
+        },
+      ],
+    };
 
-      const res = await axiosClient.post("/ai/evaluate", payload);
-      if (res.data.success) {
-        setTimeout(
-          () => navigate(`/evaluation/${interviewId}`, { replace: true }),
-          1800
-        );
-      } else {
-        alert(res.data.message || "Evaluation failed");
-        setEvaluating(false);
-      }
-    } catch (err) {
-      console.error("❌ Submit failed:", err);
-      alert("Failed to submit for AI evaluation.");
+    //  just starts evaluation and returns quickly
+    const res = await axiosClient.post("/ai/evaluate/start", payload);
+
+    if (!res.data?.success) {
+      alert(res.data?.message || "Could not start AI evaluation.");
       setEvaluating(false);
+      return;
     }
-  };
+
+    //  navigate to evaluation page
+    navigate(`/evaluation/${interviewId}`, { replace: true });
+  } catch (err) {
+    console.error("❌ Submit failed:", err);
+    alert(
+      "We tried to start AI evaluation but hit an error. Please try again."
+    );
+    setEvaluating(false);
+  }
+};
 
   // 🧹 global cleanup on unmount
   useEffect(() => {

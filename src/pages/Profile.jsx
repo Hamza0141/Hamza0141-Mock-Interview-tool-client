@@ -1,7 +1,7 @@
 // src/pages/Profile.jsx
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
-import { getUserById, updateUserInfo } from "../features/user/userSlice";
+import { getUserById } from "../features/user/userSlice";
 import userApi from "../api/userApi";
 import axiosClient from "../api/axiosClient";
 import { fetchNotifications } from "../features/notifications/notificationsSlice";
@@ -59,23 +59,23 @@ export default function Profile() {
     setFeedback("");
   };
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 
-const handleImageChange = (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  if (file.size > MAX_IMAGE_SIZE) {
-    setFeedback("❌ Image is too large. Max size is 5 MB.");
-    setImageFile(null);
-    // reset the input so user can pick again
-    e.target.value = "";
-    return;
-  }
+    if (file.size > MAX_IMAGE_SIZE) {
+      setFeedback("❌ Image is too large. Max size is 5 MB.");
+      setImageFile(null);
+      // reset the input so user can pick again
+      e.target.value = "";
+      return;
+    }
 
-  setFeedback(""); // clear old errors
-  setImageFile(file);
-};
+    setFeedback(""); // clear old errors
+    setImageFile(file);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -210,7 +210,7 @@ const handleImageChange = (e) => {
       setForm(updated);
       localStorage.setItem("user_data", JSON.stringify(updated));
       dispatch(getUserById());
-      dispatch(fetchNotifications())
+      dispatch(fetchNotifications());
 
       setShareMsg(
         `✅ ${res.data?.message || "Credit transferred successfully!"}`
@@ -223,20 +223,20 @@ const handleImageChange = (e) => {
       setShareLoading(false);
     }
   };
-const truncate = (text = "", max = 90) =>
-  text.length > max ? text.slice(0, max - 1) + "…" : text;
 
-const { items: notifications = [] } = useAppSelector(
-  (s) => s.notifications || {}
-);
+  const truncate = (text = "", max = 90) =>
+    text.length > max ? text.slice(0, max - 1) + "…" : text;
 
-const recentNotifications = [...notifications]
-  .sort(
-    (a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )
-  .slice(0, 3);
+  const { items: notifications = [] } = useAppSelector(
+    (s) => s.notifications || {}
+  );
 
+  const recentNotifications = [...notifications]
+    .sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+    .slice(0, 3);
 
   const imgSrc = form.profile_url
     ? `${import.meta.env.VITE_API_IMG_URL}${form.profile_url}?t=${Date.now()}`
@@ -277,368 +277,384 @@ const recentNotifications = [...notifications]
         border: "1px solid rgba(239,68,68,0.3)",
       };
 
-return (
-  <>
-    <h2
-      className="fw-semibold mb-3 mb-md-4"
-      style={{
-        fontSize: "1.4rem",
-        color: "var(--color-text-main)",
-      }}
-    >
-      Profile
-    </h2>
-
+  return (
+    // Top-level wrapper: prevent horizontal overflow on this page
     <div
-      className="profile-card mx-auto rounded-4 border shadow-sm w-100"
+      className="w-100"
       style={{
-        maxWidth: "56rem",
-        transition: "color 0.2s, background-color 0.2s",
-        backgroundColor: "var(--color-bg-panel)",
-        borderColor: "var(--color-border)",
-        color: "var(--color-text-main)",
+        maxWidth: "100%",
+        overflowX: "hidden",
       }}
     >
-      {/* Inner padding wrapper so we can make it responsive */}
-      <div className="p-3 p-sm-4">
-        {/* Header */}
-        <div
-          className="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-3 gap-md-4 mb-3 mb-md-4 pb-3 pb-md-4"
-          style={{
-            borderBottom: "1px solid var(--color-border)",
-          }}
-        >
-          <img
-            src={imgSrc}
-            alt="User Avatar"
+      <h2
+        className="fw-semibold mb-3 mb-md-4"
+        style={{
+          fontSize: "1.4rem",
+          color: "var(--color-text-main)",
+        }}
+      >
+        Profile
+      </h2>
+
+      <div
+        className="profile-card mx-auto rounded-4 border shadow-sm w-100"
+        style={{
+          maxWidth: "56rem",
+          transition: "color 0.2s, background-color 0.2s",
+          backgroundColor: "var(--color-bg-panel)",
+          borderColor: "var(--color-border)",
+          color: "var(--color-text-main)",
+        }}
+      >
+        {/* Inner padding wrapper so we can make it responsive */}
+        <div className="p-3 p-sm-4">
+          {/* Header */}
+          <div
+            className="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-3 gap-md-4 mb-3 mb-md-4 pb-3 pb-md-4"
             style={{
-              width: "6rem",
-              height: "6rem",
-              borderRadius: "999px",
-              objectFit: "cover",
-              border: "4px solid var(--color-primary)",
+              borderBottom: "1px solid var(--color-border)",
             }}
-          />
-
-          <div className="flex-grow-1 text-center text-md-start">
-            <h2
-              className="fw-semibold mb-1"
+          >
+            <img
+              src={imgSrc}
+              alt="User Avatar"
               style={{
-                fontSize: "1.5rem",
-                color: "var(--color-primary)",
-              }}
-            >
-              {form.first_name} {form.last_name}
-            </h2>
-            <p
-              className="mb-1"
-              style={{
-                fontSize: "0.9rem",
-                color: "var(--color-text-muted)",
-              }}
-            >
-              {form.profession || "—"}
-            </p>
-            <p
-              className="mb-2"
-              style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}
-            >
-              {form.user_email}
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setShowEditModal(true)}
-              className="btn btn-sm mt-1"
-              style={{
-                fontSize: "0.75rem",
-                padding: "0.3rem 0.9rem",
+                width: "6rem",
+                height: "6rem",
                 borderRadius: "999px",
-                fontWeight: 500,
-                border: "1px solid var(--color-primary)",
-                backgroundColor: "transparent",
-                color: "var(--color-primary)",
+                objectFit: "cover",
+                border: "4px solid var(--color-primary)",
               }}
-            >
-              Edit
-            </button>
-          </div>
+            />
 
-          <div className="d-flex flex-row flex-md-column align-items-center align-items-md-end gap-2">
-            <span
-              className="badge rounded-pill"
-              style={{
-                fontSize: "0.7rem",
-                padding: "0.25rem 0.75rem",
-                fontWeight: 500,
-                ...statusStyle,
-              }}
-            >
-              {isActive ? "Active" : "Inactive"}
-            </span>
-          </div>
-        </div>
-
-        {/* Details Grid */}
-        <div className="row g-3">
-          <div className="col-12 col-md-6">
-            <div
-              className="rounded-3 border shadow-sm h-100"
-              style={{
-                padding: "0.9rem",
-                borderColor: "var(--color-border)",
-              }}
-            >
-              <h4
-                className="fw-semibold mb-2 text-uppercase"
+            <div className="flex-grow-1 text-center text-md-start">
+              <h2
+                className="fw-semibold mb-1"
                 style={{
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.08em",
+                  fontSize: "1.5rem",
                   color: "var(--color-primary)",
                 }}
               >
-                Account Details
-              </h4>
-              <ul
-                className="mb-0"
+                {form.first_name} {form.last_name}
+              </h2>
+              <p
+                className="mb-1"
                 style={{
-                  listStyle: "none",
-                  paddingLeft: 0,
                   fontSize: "0.9rem",
+                  color: "var(--color-text-muted)",
                 }}
               >
-                <li className="mb-1">
-                  <strong>Joined:</strong>{" "}
-                  {form.created_at
-                    ? new Date(form.created_at).toLocaleDateString()
-                    : "—"}
-                </li>
-                <li className="mb-1">
-                  <strong>Credit Balance:</strong>{" "}
+                {form.profession || "—"}
+              </p>
+              <p
+                className="mb-2"
+                style={{
+                  color: "var(--color-text-muted)",
+                  fontSize: "0.9rem",
+                  wordBreak: "break-word",
+                }}
+              >
+                {form.user_email}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowEditModal(true)}
+                className="btn btn-sm mt-1"
+                style={{
+                  fontSize: "0.75rem",
+                  padding: "0.3rem 0.9rem",
+                  borderRadius: "999px",
+                  fontWeight: 500,
+                  border: "1px solid var(--color-primary)",
+                  backgroundColor: "transparent",
+                  color: "var(--color-primary)",
+                }}
+              >
+                Edit
+              </button>
+            </div>
+
+            <div className="d-flex flex-row flex-md-column align-items-center align-items-md-end gap-2">
+              <span
+                className="badge rounded-pill"
+                style={{
+                  fontSize: "0.7rem",
+                  padding: "0.25rem 0.75rem",
+                  fontWeight: 500,
+                  ...statusStyle,
+                }}
+              >
+                {isActive ? "Active" : "Inactive"}
+              </span>
+            </div>
+          </div>
+
+          {/* Details Grid */}
+          <div className="row g-3">
+            <div className="col-12 col-md-6">
+              <div
+                className="rounded-3 border shadow-sm h-100"
+                style={{
+                  padding: "0.9rem",
+                  borderColor: "var(--color-border)",
+                }}
+              >
+                <h4
+                  className="fw-semibold mb-2 text-uppercase"
+                  style={{
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.08em",
+                    color: "var(--color-primary)",
+                  }}
+                >
+                  Account Details
+                </h4>
+                <ul
+                  className="mb-0"
+                  style={{
+                    listStyle: "none",
+                    paddingLeft: 0,
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  <li className="mb-1">
+                    <strong>Joined:</strong>{" "}
+                    {form.created_at
+                      ? new Date(form.created_at).toLocaleDateString()
+                      : "—"}
+                  </li>
+                  <li className="mb-1">
+                    <strong>Credit Balance:</strong>{" "}
+                    <span
+                      className="fw-semibold"
+                      style={{ color: "var(--color-primary)" }}
+                    >
+                      {form.credit_balance ?? 0} Credits
+                    </span>
+                  </li>
+                  {form?.free_trial == 1 && (
+                    <li className="mb-1">
+                      <strong>Free Trial:</strong>{" "}
+                      {form.free_trial ? "Active" : "Used"}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+
+            <div className="col-12 col-md-6">
+              <div
+                className="rounded-3 border shadow-sm h-100"
+                style={{
+                  padding: "0.9rem",
+                  borderColor: "var(--color-border)",
+                }}
+              >
+                <h4
+                  className="fw-semibold mb-2 text-uppercase"
+                  style={{
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.08em",
+                    color: "var(--color-primary)",
+                  }}
+                >
+                  Recent Activity
+                </h4>
+                <ul
+                  className="mb-0"
+                  style={{
+                    listStyle: "none",
+                    paddingLeft: 0,
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {recentNotifications.length === 0 ? (
+                    <li
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "var(--color-text-muted)",
+                      }}
+                    >
+                      No recent activity yet.
+                    </li>
+                  ) : (
+                    recentNotifications.map((n) => (
+                      <li
+                        key={n.notification_id}
+                        className="mb-2"
+                        style={{ color: "var(--color-text-muted)" }}
+                      >
+                        <div
+                          style={{
+                            fontSize: "0.8rem",
+                            // allow wrapping & avoid horizontal scroll
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          <strong>{n.title}: </strong>
+                          {truncate(n.body, 90)}
+                        </div>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Options */}
+          <div className="row g-3 mt-3 mt-md-4">
+            {/* Share My Credit */}
+            <div className="col-12 col-md-6">
+              <div
+                className="rounded-3 border shadow-sm h-100"
+                style={{
+                  padding: "1rem",
+                  borderColor: "var(--color-border)",
+                  backgroundColor: "var(--color-bg-panel)",
+                  color: "var(--color-text-main)",
+                }}
+              >
+                <h4
+                  className="fw-semibold mb-2 text-uppercase d-flex align-items-center"
+                  style={{
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.08em",
+                    color: "var(--color-primary)",
+                  }}
+                >
+                  💰 Share My Credit
+                </h4>
+
+                <p
+                  className="mb-3"
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  You currently have{" "}
                   <span
                     className="fw-semibold"
                     style={{ color: "var(--color-primary)" }}
                   >
-                    {form.credit_balance ?? 0} Credits
-                  </span>
-                </li>
-                {form?.free_trial == 1 && (
-                  <li className="mb-1">
-                    <strong>Free Trial:</strong>{" "}
-                    {form.free_trial ? "Active" : "Used"}
-                  </li>
-                )}
-              </ul>
-            </div>
-          </div>
-
-          <div className="col-12 col-md-6">
-            <div
-              className="rounded-3 border shadow-sm h-100"
-              style={{
-                padding: "0.9rem",
-                borderColor: "var(--color-border)",
-              }}
-            >
-              <h4
-                className="fw-semibold mb-2 text-uppercase"
-                style={{
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.08em",
-                  color: "var(--color-primary)",
-                }}
-              >
-                Recent Activity
-              </h4>
-              <ul
-                className="mb-0"
-                style={{
-                  listStyle: "none",
-                  paddingLeft: 0,
-                  fontSize: "0.9rem",
-                }}
-              >
-                {recentNotifications.length === 0 ? (
-                  <li
-                    style={{
-                      fontSize: "0.85rem",
-                      color: "var(--color-text-muted)",
-                    }}
-                  >
-                    No recent activity yet.
-                  </li>
-                ) : (
-                  recentNotifications.map((n) => (
-                    <li
-                      key={n.notification_id}
-                      className="mb-2"
-                      style={{ color: "var(--color-text-muted)" }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "0.8rem",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        <strong>{n.title}: </strong>
-                        {truncate(n.body, 90)}
-                      </div>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Options */}
-        <div className="row g-3 mt-3 mt-md-4">
-          {/* Share My Credit */}
-          <div className="col-12 col-md-6">
-            <div
-              className="rounded-3 border shadow-sm h-100"
-              style={{
-                padding: "1rem",
-                borderColor: "var(--color-border)",
-                backgroundColor: "var(--color-bg-panel)",
-                color: "var(--color-text-main)",
-              }}
-            >
-              <h4
-                className="fw-semibold mb-2 text-uppercase d-flex align-items-center"
-                style={{
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.08em",
-                  color: "var(--color-primary)",
-                }}
-              >
-                💰 Share My Credit
-              </h4>
-
-              <p
-                className="mb-3"
-                style={{
-                  fontSize: "0.9rem",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                You currently have{" "}
-                <span
-                  className="fw-semibold"
-                  style={{ color: "var(--color-primary)" }}
-                >
-                  {form.credit_balance ?? 0}
-                </span>{" "}
-                credits. Share credits with a friend.
-              </p>
-
-              <button
-                type="button"
-                onClick={() => setShowShareModal(true)}
-                className="btn"
-                style={{
-                  fontSize: "0.85rem",
-                  padding: "0.45rem 1.25rem",
-                  borderRadius: "0.5rem",
-                  fontWeight: 500,
-                  color: "#fff",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                Share My Credit
-              </button>
-            </div>
-          </div>
-
-          {/* Change Password CTA */}
-          <div className="col-12 col-md-6">
-            <div
-              className="rounded-3 border shadow-sm h-100"
-              style={{
-                padding: "1rem",
-                borderColor: "var(--color-border)",
-                backgroundColor: "var(--color-bg-panel)",
-                color: "var(--color-text-main)",
-              }}
-            >
-              <h4
-                className="fw-semibold mb-2 text-uppercase d-flex align-items-center"
-                style={{
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.08em",
-                  color: "var(--color-primary)",
-                }}
-              >
-                🔒 Security Settings
-              </h4>
-
-              <p
-                className="mb-3"
-                style={{
-                  fontSize: "0.9rem",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                Keep your account secure by changing your password regularly.
-              </p>
-
-              <button
-                type="button"
-                onClick={() => setShowPasswordModal(true)}
-                className="btn"
-                style={{
-                  fontSize: "0.85rem",
-                  padding: "0.45rem 1.25rem",
-                  borderRadius: "0.5rem",
-                  fontWeight: 500,
-                  color: "#fff",
-                  backgroundColor: "var(--color-primary)",
-                }}
-              >
-                Change Password
-              </button>
-
-              <div
-                className="mt-3"
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                <p className="mb-0">
-                  💡 Tip: Use letters, numbers, and special symbols.
+                    {form.credit_balance ?? 0}
+                  </span>{" "}
+                  credits. Share credits with a friend.
                 </p>
+
+                <button
+                  type="button"
+                  onClick={() => setShowShareModal(true)}
+                  className="btn"
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "0.45rem 1.25rem",
+                    borderRadius: "0.5rem",
+                    fontWeight: 500,
+                    color: "#fff",
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                >
+                  Share My Credit
+                </button>
+              </div>
+            </div>
+
+            {/* Change Password CTA */}
+            <div className="col-12 col-md-6">
+              <div
+                className="rounded-3 border shadow-sm h-100"
+                style={{
+                  padding: "1rem",
+                  borderColor: "var(--color-border)",
+                  backgroundColor: "var(--color-bg-panel)",
+                  color: "var(--color-text-main)",
+                }}
+              >
+                <h4
+                  className="fw-semibold mb-2 text-uppercase d-flex align-items-center"
+                  style={{
+                    fontSize: "0.8rem",
+                    letterSpacing: "0.08em",
+                    color: "var(--color-primary)",
+                  }}
+                >
+                  🔒 Security Settings
+                </h4>
+
+                <p
+                  className="mb-3"
+                  style={{
+                    fontSize: "0.9rem",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  Keep your account secure by changing your password regularly.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(true)}
+                  className="btn"
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "0.45rem 1.25rem",
+                    borderRadius: "0.5rem",
+                    fontWeight: 500,
+                    color: "#fff",
+                    backgroundColor: "var(--color-primary)",
+                  }}
+                >
+                  Change Password
+                </button>
+
+                <div
+                  className="mt-3"
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--color-text-muted)",
+                  }}
+                >
+                  <p className="mb-0">
+                    💡 Tip: Use letters, numbers, and special symbols.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div
-          className="text-center mt-4 pt-3"
-          style={{
-            borderTop: "1px solid var(--color-border)",
-            fontSize: "0.85rem",
-            color: "var(--color-text-muted)",
-          }}
-        >
-          <p className="mb-0">
-            Member since{" "}
-            <span style={{ color: "var(--color-primary)" }}>
-              {form.created_at
-                ? new Date(form.created_at).toLocaleDateString()
-                : "Unknown"}
-            </span>{" "}
-            |{" "}
-            <span style={{ opacity: 0.7 }}>
-              Last updated:{" "}
-              {form.updated_at
-                ? new Date(form.updated_at).toLocaleDateString()
-                : "—"}
-            </span>
-          </p>
+          {/* Footer */}
+          <div
+            className="text-center mt-4 pt-3"
+            style={{
+              borderTop: "1px solid var(--color-border)",
+              fontSize: "0.85rem",
+              color: "var(--color-text-muted)",
+            }}
+          >
+            <p className="mb-0">
+              Member since{" "}
+              <span style={{ color: "var(--color-primary)" }}>
+                {form.created_at
+                  ? new Date(form.created_at).toLocaleDateString()
+                  : "Unknown"}
+              </span>{" "}
+              |{" "}
+              <span style={{ opacity: 0.7 }}>
+                Last updated:{" "}
+                {form.updated_at
+                  ? new Date(form.updated_at).toLocaleDateString()
+                  : "—"}
+              </span>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -1142,8 +1158,5 @@ return (
       )}
       {/* ------------------ end modals ------------------ */}
     </div>
-  </>
-);
-
-
+  );
 }

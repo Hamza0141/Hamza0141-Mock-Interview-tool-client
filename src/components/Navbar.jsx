@@ -1,7 +1,20 @@
 // src/components/Navbar.jsx
 import { useContext, useEffect, useRef, useState } from "react";
 import { ThemeContext } from "../context/ThemeContext";
-import { Sun, Moon, Menu, Bell, Search, LogOut, HomeIcon } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  Menu,
+  Bell,
+  Search,
+  LogOut,
+  Home,
+  BarChart3,
+  LayoutDashboard,
+  User,
+  Users,
+  CreditCard,
+} from "lucide-react";
 import { useAppSelector, useAppDispatch } from "../app/hooks";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -274,14 +287,13 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         columnGap: "1rem",
       }}
     >
-      {/* Left: logo + sidebar toggle */}
+      {/* Left: logo + sidebar toggle (desktop only) */}
       <div className="d-flex align-items-center gap-2">
         <button
           type="button"
           onClick={onToggleSidebar}
           className="btn p-1 rounded-2 me-1 d-none d-md-block"
           style={{
-            // ✅ make burger visible in both themes
             backgroundColor: "var(--color-bg-body)",
             border: "1px solid var(--color-border)",
             color: "var(--color-text-main)",
@@ -322,7 +334,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         </Link>
       </div>
 
-      {/* Center: search bar */}
+      {/* Center: search bar (desktop only) */}
       <form
         onSubmit={handleSearchSubmit}
         className="d-none d-md-flex flex-grow-1 mx-3"
@@ -332,11 +344,10 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
           className="d-flex align-items-center w-100 rounded-pill border shadow-inner"
           style={{
             padding: "0.35rem 0.75rem",
-            // ✅ dynamic background for light/dark theme
             backgroundColor:
               theme === "light"
-                ? "rgba(248,249,251,0.95)" // light-ish
-                : "rgba(15,23,42,0.9)", // dark-ish
+                ? "rgba(248,249,251,0.95)"
+                : "rgba(15,23,42,0.9)",
             borderColor: "var(--color-border)",
             columnGap: "0.5rem",
           }}
@@ -362,7 +373,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
         </div>
       </form>
 
-      {/* Right: theme toggle, notifications, user chip, mobile logout */}
+      {/* Right: theme toggle, notifications, user chip, mobile actions */}
       <div className="d-flex align-items-center gap-2">
         {/* Home button */}
         <Link to="/">
@@ -384,7 +395,7 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
               e.currentTarget.style.boxShadow = "none";
             }}
           >
-            <HomeIcon size={16} />
+            <Home size={16} />
           </button>
         </Link>
 
@@ -411,53 +422,106 @@ export default function Navbar({ collapsed, onToggleSidebar }) {
           {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
         </button>
 
-        {/* Notification bell */}
-        <NotificationBell />
-
-        {/* User chip */}
+        {/* Mobile-only nav icons (replacing sidebar) */}
         {user && (
-          <Link to="/profile" className="text-decoration-none">
-            <div
-              className="d-flex align-items-center ps-3"
-              style={{
-                borderLeft: "1px solid rgba(255,255,255,0.1)",
-                columnGap: "0.5rem",
-              }}
-            >
-              <img
-                src={imgSrc}
-                alt="Profile"
+          <div className="d-flex d-md-none align-items-center gap-1 ms-1">
+            <Link to="/dashboard">
+              <button
+                type="button"
+                className="btn p-2 rounded-circle border-0"
                 style={{
-                  width: "2rem",
-                  height: "2rem",
-                  borderRadius: "999px",
-                  objectFit: "cover",
-                  border: "1px solid rgba(255,255,255,0.2)",
+                  backgroundColor: "transparent",
+                  color: "var(--color-text-main)",
                 }}
-              />
-              <div className="d-none d-sm-flex flex-column">
-                <span
-                  style={{
-                    fontSize: "10px",
-                    color: "var(--color-text-muted)",
-                  }}
-                >
-                  Welcome back
-                </span>
-                <span
-                  className="fw-semibold"
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--color-text-main)",
-                  }}
-                >
-                  {user.first_name || "User"}
-                </span>
-              </div>
-            </div>
-          </Link>
+              >
+                <LayoutDashboard size={16} />
+              </button>
+            </Link>
+            <Link to="/interview">
+              <button
+                type="button"
+                className="btn p-2 rounded-circle border-0"
+                style={{
+                  backgroundColor: "transparent",
+                  color: "var(--color-text-main)",
+                }}
+              >
+                <Users size={16} />
+              </button>
+            </Link>
+            <Link to="/reports">
+              <button
+                type="button"
+                className="btn p-2 rounded-circle border-0"
+                style={{
+                  backgroundColor: "transparent",
+                  color: "var(--color-text-main)",
+                }}
+              >
+                <BarChart3 size={16} />
+              </button>
+            </Link>
+            <Link to="/buy-credits">
+              <button
+                type="button"
+                className="btn p-2 rounded-circle border-0"
+                style={{
+                  backgroundColor: "transparent",
+                  color: "var(--color-text-main)",
+                }}
+              >
+                <CreditCard size={16} />
+              </button>
+            </Link>
+          </div>
         )}
-
+        {/* User chip (hidden on very small screens) */}
+        {user && (
+          <>
+            {/* Notification bell */}
+            <NotificationBell />
+            <Link to="/profile" className="text-decoration-none">
+              <div
+                className="d-flex align-items-center ps-3"
+                style={{
+                  borderLeft: "1px solid rgba(255,255,255,0.1)",
+                  columnGap: "0.5rem",
+                }}
+              >
+                <img
+                  src={imgSrc}
+                  alt="Profile"
+                  style={{
+                    width: "2rem",
+                    height: "2rem",
+                    borderRadius: "999px",
+                    objectFit: "cover",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                  }}
+                />
+                <div className="d-none d-sm-flex flex-column">
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      color: "var(--color-text-muted)",
+                    }}
+                  >
+                    Welcome back
+                  </span>
+                  <span
+                    className="fw-semibold"
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--color-text-main)",
+                    }}
+                  >
+                    {user.first_name || "User"}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </>
+        )}
         {/* Mobile logout button (visible only < md) */}
         <button
           type="button"

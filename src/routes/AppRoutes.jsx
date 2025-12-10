@@ -18,7 +18,7 @@ import NotFound from "@/pages/not-found.jsx";
 import CookiesPage from "@/pages/CookiesPage.jsx";
 import Contact from "@/pages/contact.jsx";
 
-// ========== YOUR INTERNAL APP PAGES ==========
+// ========== INTERNAL APP PAGES ==========
 const TermsPage = lazy(() => import("../pages/TermsPage"));
 const PrivacyPolicyPage = lazy(() => import("../pages/PrivacyPolicyPage"));
 const InterviewPage = lazy(() => import("../pages/Interview"));

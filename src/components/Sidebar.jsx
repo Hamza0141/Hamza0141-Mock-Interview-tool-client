@@ -1,7 +1,7 @@
 // src/components/Sidebar.jsx
 import { useMemo } from "react";
 import {
-  Home,
+LayoutDashboard,
   User,
   BarChart3,
   LogOut,
@@ -26,7 +26,11 @@ export default function Sidebar({ collapsed }) {
   // All sidebar items
   const items = useMemo(
     () => [
-      { id: "dashboard", label: "Dashboard", icon: <Home size={18} /> },
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: <LayoutDashboard size={16} />,
+      },
       { id: "interview", label: "Interview", icon: <UilUsersAlt size={18} /> },
       { id: "reports", label: "Results", icon: <BarChart3 size={18} /> },
       { id: "profile", label: "Profile", icon: <User size={18} /> },

@@ -85,7 +85,7 @@ export default function InterviewSessionSetup() {
           Ready for Your Mock Interview?
         </h1>
         <p className="opacity-90 max-w-lg mx-auto text-sm">
-          You’ll go through 9 realistic AI-generated questions tailored to your
+          You’ll go through 10 realistic AI-generated questions tailored to your
           selected job title.
         </p>
         <p className="text-xs italic opacity-60 mt-2">
