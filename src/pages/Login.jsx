@@ -37,19 +37,19 @@ export default function Login() {
   const [canResendReset, setCanResendReset] = useState(true);
 
   // ===== Effects =====
-
+console.log(isAuthenticated);
   // Redirect after login
-  useEffect(() => {
-    if (isAuthenticated) {
-      setFeedback({
-        type: "success",
-        text: "Login successful! Redirecting...",
-      });
-
-      const timer = setTimeout(() => navigate("/dashboard"), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated, navigate]);
+useEffect(() => {
+  // Only redirect after a *fresh* successful login/verify,
+  // not just because localStorage has a user.
+  if (isAuthenticated && (status === "succeeded" || status === "verified")) {
+    setFeedback({
+      type: "success",
+      text: "Login successful! Redirecting...",
+    });
+    navigate("/dashboard");
+  }
+}, [isAuthenticated, status, navigate]);
 
   // Handle login error (e.g. unverified email)
   useEffect(() => {

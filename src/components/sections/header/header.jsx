@@ -10,7 +10,7 @@ const Header = () => {
   const { pathname } = useLocation();
   const [isSticky, setIsSticky] = useState(false);
 
-  // Handle different style modes based on route
+  // style-2 / style-3 per route
   useEffect(() => {
     if (!ref.current) return;
 
@@ -20,7 +20,7 @@ const Header = () => {
     if (pathname === "/home-three") ref.current.classList.add("style-3");
   }, [pathname]);
 
-  // Sticky navbar scroll behavior
+  // sticky behavior
   useEffect(() => {
     const onScroll = () => setIsSticky(window.scrollY > 120);
     window.addEventListener("scroll", onScroll);
@@ -43,9 +43,9 @@ const Header = () => {
               Prepare With AI
             </Link>
 
-            {/* Right side (mobile) */}
-            <div className="other-all-option">
-              <div className="other-option d-lg-none">
+            {/* Right (mobile only): search + burger */}
+            <div className="other-all-option d-flex d-lg-none align-items-center">
+              <div className="other-option">
                 <button
                   data-bs-toggle="offcanvas"
                   data-bs-target="#offcanvasTop"
@@ -55,7 +55,6 @@ const Header = () => {
                 </button>
               </div>
 
-              {/* Burger Button */}
               <button
                 className="navbar-toggler"
                 data-bs-toggle="offcanvas"
@@ -71,8 +70,8 @@ const Header = () => {
               </button>
             </div>
 
-            {/* Desktop Nav */}
-            <div className="collapse navbar-collapse">
+            {/* Desktop Nav (visible lg and up, hidden on mobile) */}
+            <div className="d-none d-lg-flex flex-grow-1 justify-content-end">
               <Navbar />
             </div>
           </nav>

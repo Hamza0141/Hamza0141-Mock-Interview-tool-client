@@ -216,7 +216,7 @@ h6 {
 
 .public-site .navbar-area .navbar-nav .nav-item {
   position: sticky;
-    background-color: #0707c9;
+    /* background-color: #0707c9; */
     border-bottom: 1px solid #1A243D;
     z-index: 1000;
   display: block !important;
@@ -6437,4 +6437,9 @@ Select Box CSS
 
 .popup-img{
   cursor: pointer;
+}
+
+.nav-item{
+  background-color: transparent !important;
+  visibility: hidden;
 }

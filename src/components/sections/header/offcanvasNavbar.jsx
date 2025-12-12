@@ -12,17 +12,33 @@ const ResponsiveNavbar = () => {
   const handleNavClick = (href) => (e) => {
     e.preventDefault();
 
-    // SPA navigation
-    navigate(href);
-
-    // Close the Bootstrap offcanvas panel
+    // 1) Close the Bootstrap offcanvas if it exists
     const offcanvasEl = document.getElementById("navbarOffcanvas");
+
     if (offcanvasEl && window.bootstrap) {
       const instance =
         window.bootstrap.Offcanvas.getInstance(offcanvasEl) ||
         new window.bootstrap.Offcanvas(offcanvasEl);
       instance.hide();
     }
+
+    // 2) FORCE clean up body scroll lock & backdrops
+    const body = document.body;
+    if (body) {
+      // remove any inline scroll lock that offcanvas applied
+      body.style.overflow = "";
+      body.style.position = "";
+      body.style.touchAction = "";
+      body.classList.remove("offcanvas-open", "modal-open");
+    }
+
+    // remove leftover offcanvas backdrops if any
+    document
+      .querySelectorAll(".offcanvas-backdrop")
+      .forEach((el) => el.parentNode && el.parentNode.removeChild(el));
+
+    // 3) Now do SPA navigation
+    navigate(href);
   };
 
   return (
@@ -53,12 +69,12 @@ const ResponsiveNavbar = () => {
           {navigationData.map((item) => {
             const isActive = pathname === item.href;
 
-            // 🔒 Hide Login/Sign Up if user is authenticated
+            // Hide Login/Sign Up if user is authenticated
             if (item.label === "Login/Sign Up" && isAuthenticated) {
               return null;
             }
 
-            // 🔓 Hide Dashboard link if user is NOT authenticated
+            // Hide Dashboard link if user is NOT authenticated
             if (item.label === "Dashboard" && !isAuthenticated) {
               return null;
             }

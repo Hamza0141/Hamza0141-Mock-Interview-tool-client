@@ -1,9 +1,8 @@
 // src/layouts/DashboardLayout.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../app/hooks";
-import { logoutUser as logoutAction } from "../features/auth/authSlice";
-import authApi from "../api/authApi";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
+import { checkSession } from "../features/auth/authSlice";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
@@ -11,6 +10,7 @@ export default function DashboardLayout({ children }) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
+  const { isAuthenticated, sessionStatus } = useAppSelector((s) => s.auth);
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.innerWidth < 768; // collapsed by default on mobile
@@ -21,6 +21,7 @@ export default function DashboardLayout({ children }) {
     return window.innerWidth < 768;
   });
 
+  // ---------- Responsive sidebar / mobile detection ----------
   useEffect(() => {
     function handleResize() {
       if (typeof window === "undefined") return;
@@ -43,40 +44,20 @@ export default function DashboardLayout({ children }) {
     }
   };
 
-  // ✅ Session / cookie check
+  // ---------- Session check via Redux ----------
+  // 1) Ask backend to validate cookie when session is "unknown"
   useEffect(() => {
-    let isMounted = true;
-
-    async function checkSession() {
-      try {
-        await authApi.me();
-      } catch (err) {
-        if (!isMounted) return;
-        console.error("❌ Session check failed:", err);
-        const status = err?.response?.status;
-
-        if (
-          status === 401 ||
-          status === 403 ||
-          status === 400 ||
-          status === undefined
-        ) {
-          localStorage.removeItem("user_data");
-          dispatch(logoutAction());
-          try {
-            await authApi.logout();
-          } catch (_) {}
-          navigate("/login", { replace: true });
-        }
-      }
+    if (sessionStatus === "unknown") {
+      dispatch(checkSession());
     }
+  }, [sessionStatus, dispatch]);
 
-    checkSession();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [dispatch, navigate]);
+  // 2) Redirect to login only when we definitively know the session is invalid
+  useEffect(() => {
+    if (!isAuthenticated && sessionStatus === "invalid") {
+      navigate("/login", { replace: true });
+    }
+  }, [isAuthenticated, sessionStatus, navigate]);
 
   // marginLeft only for desktop where sidebar is rendered
   const desktopMarginLeft = !isMobile ? (collapsed ? "5rem" : "16rem") : "0";

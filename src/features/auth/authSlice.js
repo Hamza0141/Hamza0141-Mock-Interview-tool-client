@@ -1,13 +1,16 @@
+// src/features/auth/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authApi from "../../api/authApi";
 
-// 🧩 Register user
+// =============== Thunks ===============
+
+// Register
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (data, { rejectWithValue }) => {
     try {
       const res = await authApi.register(data);
-      return res.data; // backend sends { status, message, ... }
+      return res.data;
     } catch (err) {
       console.error("❌ Register error:", err.response?.data);
       return rejectWithValue(err.message || "Registration failed");
@@ -15,13 +18,13 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// 🧩 Verify email
+// Verify email
 export const verifyEmail = createAsyncThunk(
   "auth/verifyEmail",
   async (data, { rejectWithValue }) => {
     try {
       const res = await authApi.verifyEmail(data);
-      return res.data; // backend sets cookie & returns { success, message, data: { user } }
+      return res.data;
     } catch (err) {
       console.error("❌ verifyEmail error:", err.response?.data || err.message);
       return rejectWithValue(err.message || "Verification failed");
@@ -29,48 +32,79 @@ export const verifyEmail = createAsyncThunk(
   }
 );
 
-// Login (backend sets HttpOnly cookie)
+// Login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (data, { rejectWithValue }) => {
     try {
       const res = await authApi.login(data);
       const user = res.data.data.user;
-
-      // Store in localStorage
       localStorage.setItem("user_data", JSON.stringify(user));
-
       return { user };
     } catch (err) {
-      console.log(err);
       console.error("❌ Login error:", err.message);
       return rejectWithValue(err.message || "Login failed");
     }
   }
 );
 
-// 🧩 Get user profile (verifies cookie server-side)
+// Get profile (normal use)
 export const getProfile = createAsyncThunk(
   "auth/getProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await authApi.getProfile(); // backend reads cookie internally
+      const res = await authApi.getProfile();
       return res.data?.data;
     } catch (err) {
-      console.error("❌ Get profile error:", err.response?.data);
-      return rejectWithValue(
-        err.response?.data?.message || "Unable to fetch profile"
-      );
+      console.error("❌ Get profile error:", err.response?.data || err.message);
+      const status = err?.response?.status ?? null;
+      return rejectWithValue(status);
     }
   }
 );
 
-// Logout (clears cookie server-side)
+// 🔍 Session check – uses getProfile
+export const checkSession = createAsyncThunk(
+  "auth/checkSession",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await authApi.getProfile();
+      // ✅ your backend: { userData: { ... } }
+      const user = res?.data?.userData;
+
+      if (!user || !user.profile_id) {
+        throw new Error("Invalid session response");
+      }
+
+      return user;
+    } catch (err) {
+      const status = err?.response?.status;
+      console.error("❌ checkSession error:", err.response || err.message);
+
+      // Treat these as NOT AUTHENTICATED
+      if (
+        status === 401 ||
+        status === 403 ||
+        status === 400 ||
+        status === 0 ||
+        status === undefined
+      ) {
+        return rejectWithValue("UNAUTHENTICATED");
+      }
+
+      return rejectWithValue(err.message || "Session check failed");
+    }
+  }
+);
+
+const hasStoredUser = !!localStorage.getItem("user_data");
+
+// Logout
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      await authApi.logout(); // clears cookie on backend
+      await authApi.logout();
       return true;
     } catch (err) {
       console.error("❌ Logout error:", err.response?.data || err.message);
@@ -79,13 +113,19 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// =============== Slice ===============
+
+const storedUser = JSON.parse(localStorage.getItem("user_data") || "null");
+
 const initialState = {
   user: JSON.parse(localStorage.getItem("user_data")) || null,
-  isAuthenticated: !!localStorage.getItem("user_data"),
+  isAuthenticated: hasStoredUser,
   status: "idle",
   error: null,
   message: null,
+  sessionStatus: hasStoredUser ? "unknown" : "invalid", // "unknown" until we run checkSession
 };
+
 
 const authSlice = createSlice({
   name: "auth",
@@ -97,12 +137,13 @@ const authSlice = createSlice({
       state.status = "idle";
       state.error = null;
       state.message = null;
-      localStorage.removeItem("user_data"); // always clear
+      state.sessionStatus = "invalid";
+      localStorage.removeItem("user_data");
     },
   },
   extraReducers: (builder) => {
     builder
-      // Register
+      // ------- Register -------
       .addCase(registerUser.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -117,7 +158,7 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Verify Email
+      // ------- Verify Email -------
       .addCase(verifyEmail.pending, (state) => {
         state.status = "verifying";
         state.error = null;
@@ -125,15 +166,18 @@ const authSlice = createSlice({
       .addCase(verifyEmail.fulfilled, (state, action) => {
         state.status = "verified";
         state.isAuthenticated = true;
+        state.sessionStatus = "valid";
         state.user = action.payload?.data?.user || null;
         state.message = action.payload.message;
       })
       .addCase(verifyEmail.rejected, (state, action) => {
         state.status = "failed";
+        state.isAuthenticated = false;
+        state.sessionStatus = "invalid";
         state.error = action.payload;
       })
 
-      // Login
+      // ------- Login -------
       .addCase(loginUser.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -142,14 +186,16 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.user = action.payload.user;
         state.isAuthenticated = true;
-        state.error = null;
+        state.sessionStatus = "valid";
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
         state.isAuthenticated = false;
+        state.sessionStatus = "invalid";
       })
-      // Get Profile
+
+      // ------- Get Profile (explicit fetch) -------
       .addCase(getProfile.pending, (state) => {
         state.status = "loading";
       })
@@ -157,19 +203,46 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.user = action.payload;
         state.isAuthenticated = true;
+        state.sessionStatus = "valid";
       })
       .addCase(getProfile.rejected, (state, action) => {
         state.status = "failed";
-        state.isAuthenticated = false;
-        state.error = action.payload;
+        const status = action.payload;
+        // ❗ Only hard-logout on explicit auth errors
+        if (status === 401 || status === 403 || status === "no-user") {
+          state.user = null;
+          state.isAuthenticated = false;
+          state.sessionStatus = "invalid";
+          localStorage.removeItem("user_data");
+        } else {
+          state.sessionStatus = "error"; // e.g., network/500
+        }
       })
 
-      // Logout
+      // ------- Session Check -------
+      .addCase(checkSession.pending, (state) => {
+        state.sessionStatus = "checking";
+      })
+      .addCase(checkSession.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.sessionStatus = "valid";
+        state.error = null;
+        localStorage.setItem("user_data", JSON.stringify(action.payload));
+      })
+      .addCase(checkSession.rejected, (state, action) => {
+        state.user = null;
+        state.isAuthenticated = false;
+        state.sessionStatus = "invalid";
+        state.error = action.payload || "Session invalid";
+        localStorage.removeItem("user_data");
+      })
+      // ------- Logout -------
       .addCase(logoutUser.fulfilled, (state) => {
-        // ✅ Same cleanup here
         state.user = null;
         state.isAuthenticated = false;
         state.status = "idle";
+        state.sessionStatus = "invalid";
         localStorage.removeItem("user_data");
       })
       .addCase(logoutUser.rejected, (state, action) => {
@@ -179,4 +252,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;
