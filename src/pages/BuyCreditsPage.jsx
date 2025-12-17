@@ -4,6 +4,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../stripe/stripeConfig";
 import { fetchCreditPacks, createPaymentIntent } from "../api/creditApi";
 import { CreditPaymentForm } from "../components/CreditPaymentForm";
+import { Link } from "react-router-dom";
 
 export default function BuyCreditsPage({ profileId }) {
   const [loading, setLoading] = useState(true);
@@ -183,9 +184,7 @@ export default function BuyCreditsPage({ profileId }) {
                       <span
                         className="fw-semibold"
                         style={{
-                          
                           color: "var(--color-primary)",
-                          
                         }}
                       >
                         {selectedPack.credits} credits · $
@@ -411,6 +410,17 @@ export default function BuyCreditsPage({ profileId }) {
             </div>
           </div>
         </div>
+      </div>
+      <div className="d-flex flex-row flex-md-column align-items-center align-items-md-end gap-2">
+        {/* Feedback link */}
+        <Link to="/feedback" className="link-small">
+          Give us your feedback
+        </Link>
+
+        {/* Ticket link */}
+        <Link to="/tickets" className="link-small">
+          Create a Ticket
+        </Link>
       </div>
     </div>
   );

@@ -177,10 +177,7 @@ export default function ReportPage() {
                 style={{ color: "var(--color-primary)" }}
               >
                 {card.icon}
-                <h3
-                  className="mb-0 fw-semibold"
-                  style={{ fontSize: "1rem" }}
-                >
+                <h3 className="mb-0 fw-semibold" style={{ fontSize: "1rem" }}>
                   {card.title}
                 </h3>
               </div>
@@ -254,10 +251,7 @@ export default function ReportPage() {
               );
 
               return (
-                <div
-                  className="col-12 col-sm-6 col-lg-4"
-                  key={item.id}
-                >
+                <div className="col-12 col-sm-6 col-lg-4" key={item.id}>
                   <motion.div
                     whileHover={{
                       scale: 1.05,
@@ -302,9 +296,7 @@ export default function ReportPage() {
                               ? "rgba(34,197,94,0.2)"
                               : "rgba(234,179,8,0.2)",
                           color:
-                            item.status === "completed"
-                              ? "#4ade80"
-                              : "#facc15",
+                            item.status === "completed" ? "#4ade80" : "#facc15",
                         }}
                       >
                         {item.status}
@@ -344,12 +336,12 @@ export default function ReportPage() {
 
                     {metricEntries.length > 0 && !item.metrics?.note && (
                       <div className="mt-2">
-                        <div className="row g-2" style={{ fontSize: "0.75rem" }}>
+                        <div
+                          className="row g-2"
+                          style={{ fontSize: "0.75rem" }}
+                        >
                           {metricEntries.slice(0, 3).map(([k, v], i) => (
-                            <div
-                              className="col-4"
-                              key={i}
-                            >
+                            <div className="col-4" key={i}>
                               <div
                                 className="text-center rounded-3"
                                 style={{
@@ -424,27 +416,17 @@ export default function ReportPage() {
         )}
       </div>
 
-      {/* Feedback link */}
-      <Link to="/feedback">
-        <button
-          type="button"
-          onClick={() => {}}
-          className="btn btn-link p-0 mt-2"
-          style={{
-            fontSize: "0.75rem",
-            color: "var(--color-text-muted)",
-            textDecoration: "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.textDecoration = "underline";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.textDecoration = "none";
-          }}
-        >
+      <div className="d-flex flex-row flex-md-column align-items-center align-items-md-end gap-2">
+        {/* Feedback link */}
+        <Link to="/feedback" className="link-small">
           Give us your feedback
-        </button>
-      </Link>
+        </Link>
+
+        {/* Ticket link */}
+        <Link to="/tickets" className="link-small">
+          Create a Ticket
+        </Link>
+      </div>
     </div>
   );
 }

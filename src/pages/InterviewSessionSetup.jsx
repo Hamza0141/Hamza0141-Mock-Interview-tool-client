@@ -12,7 +12,7 @@ export default function InterviewSessionSetup() {
   const [form, setForm] = useState({
     job_title: "",
     job_description: "",
-    difficulty: "medium",
+    difficulty: "easy",
   });
   const [status, setStatus] = useState("idle");
   const [feedback, setFeedback] = useState("");

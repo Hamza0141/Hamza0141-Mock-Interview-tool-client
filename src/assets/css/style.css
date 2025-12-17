@@ -6443,3 +6443,15 @@ Select Box CSS
   background-color: transparent !important;
   visibility: hidden;
 }
+
+.link-small {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.link-small:hover {
+  text-decoration: underline;
+  color: var(--color-primary); /* optional subtle color change */
+}

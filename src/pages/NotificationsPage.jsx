@@ -63,7 +63,7 @@ function typeLabel(entityType) {
   }
 }
 
-// Filters: align these keys with your entity_type / type values
+// Filters: align these keys with  entity_type / type values
 const FILTERS = [
   { key: "all", label: "All" },
   { key: "interview", label: "Interviews" },
@@ -126,27 +126,27 @@ export default function NotificationsPage() {
     [items, activeFilter]
   );
 
-  const handleNavigate = (n) => {
-    const entityType = n.entity_type || n.type;
+  // const handleNavigate = (n) => {
+  //   const entityType = n.entity_type || n.type;
 
-    switch (entityType) {
-      case "interview_session":
-        navigate(`/evaluation/${n.entity_id}`);
-        break;
-      case "public_speech":
-        navigate(`/speech/evaluation/${n.entity_id}`);
-        break;
-      case "support_ticket":
-        navigate(`/tickets/${n.entity_id}`);
-        break;
-      case "credit_transaction":
-      case "credit_transfer":
-        navigate("/billing");
-        break;
-      default:
-        navigate("/dashboard");
-    }
-  };
+  //   switch (entityType) {
+  //     case "interview_session":
+  //       navigate(`/evaluation/${n.entity_id}`);
+  //       break;
+  //     case "public_speech":
+  //       navigate(`/speech/evaluation/${n.entity_id}`);
+  //       break;
+  //     case "support_ticket":
+  //       navigate(`/tickets/${n.entity_id}`);
+  //       break;
+  //     case "credit_transaction":
+  //     case "credit_transfer":
+  //       navigate("/billing");
+  //       break;
+  //     default:
+  //       navigate("/dashboard");
+  //   }
+  // };
 
   const handleClickNotification = async (n) => {
     if (!n.notification_id) {

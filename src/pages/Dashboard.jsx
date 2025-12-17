@@ -1,6 +1,6 @@
 // src/pages/DashboardPage.jsx
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Brain,
   BarChart3,
@@ -672,6 +672,18 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      <div className="d-flex flex-row flex-md-column align-items-center align-items-md-end gap-2">
+        {/* Feedback link */}
+        <Link to="/feedback" className="link-small">
+          Give us your feedback
+        </Link>
+
+        {/* Ticket link */}
+        <Link to="/tickets" className="link-small">
+          Create a Ticket
+        </Link>
+      </div>
+      
     </div>
   );
 }
