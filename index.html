@@ -2,11 +2,47 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/pavIcon2.png" />
+    <link rel="icon" type="image/png" href="/pavIcon2.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Prep With AI</title>
+
+    <!-- Primary SEO -->
+    <title>PrepWithAI | AI Interview & Public Speaking Practice</title>
+    <meta
+      name="description"
+      content="Practice job interviews and public speaking with AI. Get tailored questions, instant feedback, scoring, and repeatable mock sessions to improve fast."
+    />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Canonical (prevents duplicate indexing of www/non-www/http/https variants) -->
+    <link rel="canonical" href="https://prepwithai.net/" />
+
+    <!-- Open Graph (shows rich preview when shared) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PrepWithAI | AI Interview & Public Speaking Practice" />
+    <meta
+      property="og:description"
+      content="Practice job interviews and public speaking with AI. Instant feedback, scoring, and mock sessions."
+    />
+    <meta property="og:url" content="https://prepwithai.net/" />
+    <meta property="og:image" content="https://prepwithai.net/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PrepWithAI | AI Interview & Public Speaking Practice" />
+    <meta
+      name="twitter:description"
+      content="Practice job interviews and public speaking with AI. Instant feedback, scoring, and mock sessions."
+    />
+    <meta name="twitter:image" content="https://prepwithai.net/og-image.png" />
   </head>
+
   <body>
+    <!--  tiny pre-rendered text helps Google before JS runs -->
+    <noscript>
+      <h1>PrepWithAI</h1>
+      <p>AI-powered interview and public speaking practice with instant feedback and scoring.</p>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

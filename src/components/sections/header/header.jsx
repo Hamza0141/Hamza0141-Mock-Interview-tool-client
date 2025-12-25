@@ -40,7 +40,7 @@ const Header = () => {
           <nav className="navbar navbar-expand-lg">
             {/* Logo */}
             <Link className="navbar-brand" to="/">
-              Prepare With AI
+              <h1>Prepare With AI</h1>
             </Link>
 
             {/* Right (mobile only): search + burger */}
